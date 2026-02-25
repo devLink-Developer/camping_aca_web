@@ -1,0 +1,122 @@
+<!-- Analytics tracking script -->
+<script>
+(function() {
+    let startTime = Date.now();
+    let maxScroll = 0;
+    let sectionTimes = {};
+    let currentSection = null;
+    let sectionStartTime = null;
+    
+    // Track scroll depth
+    function trackScroll() {
+        const scrollPercent = Math.round((window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100);
+        maxScroll = Math.max(maxScroll, scrollPercent);
+    }
+    
+    // Track section viewing
+    function trackSection() {
+        const sections = document.querySelectorAll('section[id]');
+        let foundSection = null;
+        
+        sections.forEach(section => {
+            const rect = section.getBoundingClientRect();
+            const viewportHeight = window.innerHeight;
+            
+            // Section is in viewport if it's at least 50% visible
+            if (rect.top < viewportHeight * 0.5 && rect.bottom > viewportHeight * 0.5) {
+                foundSection = section.id;
+            }
+        });
+        
+        if (foundSection && foundSection !== currentSection) {
+            // Save time for previous section
+            if (currentSection && sectionStartTime) {
+                const timeInSection = Math.round((Date.now() - sectionStartTime) / 1000);
+                if (!sectionTimes[currentSection]) {
+                    sectionTimes[currentSection] = 0;
+                }
+                sectionTimes[currentSection] += timeInSection;
+                
+                // Send section data to backend
+                sendSectionData(currentSection, sectionTimes[currentSection]);
+            }
+            
+            // Start tracking new section
+            currentSection = foundSection;
+            sectionStartTime = Date.now();
+        }
+    }
+    
+    // Send page metrics to backend
+    function sendPageMetrics() {
+        const timeOnPage = Math.round((Date.now() - startTime) / 1000);
+        
+        fetch("{% url 'analytics:update_metrics' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                time_on_page: timeOnPage,
+                scroll_depth: maxScroll
+            })
+        }).catch(err => console.error('Analytics error:', err));
+    }
+    
+    // Send section data
+    function sendSectionData(sectionId, timeInSection) {
+        fetch("{% url 'analytics:track_section' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                section_id: sectionId,
+                section_name: getSectionName(sectionId),
+                time_in_section: timeInSection
+            })
+        }).catch(err => console.error('Section tracking error:', err));
+    }
+    
+    // Get section name
+    function getSectionName(sectionId) {
+        const section = document.getElementById(sectionId);
+        const heading = section ? section.querySelector('h2, h1') : null;
+        return heading ? heading.textContent.trim() : sectionId;
+    }
+    
+    // Get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    // Event listeners
+    window.addEventListener('scroll', function() {
+        trackScroll();
+        trackSection();
+    });
+    
+    // Send metrics on page leave
+    window.addEventListener('beforeunload', sendPageMetrics);
+    
+    // Send metrics every 30 seconds while on page
+    setInterval(sendPageMetrics, 30000);
+    
+    // Initial tracking
+    trackScroll();
+    trackSection();
+})();
+</script>

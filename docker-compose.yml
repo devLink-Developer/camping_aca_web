@@ -1,0 +1,43 @@
+services:
+  web:
+    build: .
+    container_name: camping_aca_lujan
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "8007:8007"
+    volumes:
+      - ./staticfiles:/app/staticfiles
+      - ./media:/app/media
+      - ./logs:/app/logs
+    networks:
+      - traefik_proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik_proxy"
+      
+      # HTTP router
+      - "traefik.http.routers.camping-aca.rule=Host(`${TRAEFIK_DOMAIN:-campingacalujan.com}`)"
+      - "traefik.http.routers.camping-aca.entrypoints=websecure"
+      - "traefik.http.routers.camping-aca.tls.certresolver=letsencrypt"
+      
+      # Service
+      - "traefik.http.services.camping-aca.loadbalancer.server.port=8007"
+      
+      # Middleware (optional)
+      - "traefik.http.routers.camping-aca.middlewares=secure-headers@file"
+    healthcheck:
+      test: ["CMD", "python", "manage.py", "check", "--deploy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  traefik_proxy:
+    external: true
+
+# Note: Database is already running in the traefik_proxy network
+# Container: devlink_db
+# Connection details configured via environment variables in .env

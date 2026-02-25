@@ -1,0 +1,351 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Gestión de Servicios - {{ site_config.site_name }}{% endblock %}
+
+{% block content %}
+<style>
+.icon-picker-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+.icon-picker-grid .icon-option { cursor: pointer; }
+.icon-picker-grid .icon-option input[type="radio"] { display: none; }
+.icon-picker-grid .icon-option .icon-btn {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    width: 70px; height: 70px; border: 2px solid #dee2e6; border-radius: 10px;
+    background: #fff; transition: all .15s; font-size: 1.4rem; color: #555; padding: 4px;
+}
+.icon-picker-grid .icon-option .icon-btn span { font-size: 0.55rem; color: #888; margin-top: 3px; text-align: center; line-height: 1.1; }
+.icon-picker-grid .icon-option input:checked + .icon-btn { border-color: #df1d2e; background: #fff0f0; color: #df1d2e; }
+.icon-picker-grid .icon-option .icon-btn:hover { border-color: #aaa; background: #f8f8f8; }
+.file-upload-zone {
+    border: 2px dashed #dee2e6; border-radius: 10px; padding: 16px;
+    text-align: center; background: #fafafa; cursor: pointer; transition: border-color .15s;
+}
+.file-upload-zone:hover, .file-upload-zone.active { border-color: #df1d2e; background: #fff0f0; }
+.file-upload-zone input[type="file"] { display: none; }
+</style>
+
+<!-- Hero Section -->
+<section class="bg-danger text-white py-3" style="background-color: #df1d2e !important;">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="h3 fw-bold mb-1">
+                    <i class="fas fa-concierge-bell me-2"></i>Gestión de Servicios
+                </h1>
+                <p class="mb-0 small">Administra los servicios que se muestran en tu sitio web</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <a href="{% url 'dashboard:settings' %}" class="btn btn-light btn-sm">
+                    <i class="fas fa-arrow-left me-1"></i>Volver
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Formulario para nuevo servicio -->
+<section class="py-3">
+    <div class="container">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header text-white py-2" style="background-color: #df1d2e;">
+                <h3 class="h6 mb-0"><i class="fas fa-plus-circle me-2"></i>Agregar Nuevo Servicio</h3>
+            </div>
+            <div class="card-body p-3">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="create">
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label class="form-label small fw-bold mb-1">Título del Servicio</label>
+                            <input type="text" class="form-control form-control-sm" name="title" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold mb-1">Orden</label>
+                            <input type="number" class="form-control form-control-sm" name="order" value="0" min="0">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-bold mb-1">Descripción</label>
+                            <textarea class="form-control form-control-sm" name="description" rows="2" required></textarea>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-bold mb-1">Características <span class="text-muted fw-normal">(una por línea)</span></label>
+                            <textarea class="form-control form-control-sm" name="features" rows="4" placeholder="Parrillas&#10;Duchas con agua caliente&#10;Wi-Fi"></textarea>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-bold mb-2">Icono del Servicio</label>
+                            <ul class="nav nav-tabs mb-3" id="iconTabCreate">
+                                <li class="nav-item">
+                                    <button class="nav-link active small py-1" data-bs-toggle="tab" data-bs-target="#tabFaCreate" type="button">
+                                        <i class="fas fa-icons me-1"></i>Iconos predefinidos
+                                    </button>
+                                </li>
+                                <li class="nav-item">
+                                    <button class="nav-link small py-1" data-bs-toggle="tab" data-bs-target="#tabImgCreate" type="button">
+                                        <i class="fas fa-image me-1"></i>Subir imagen
+                                    </button>
+                                </li>
+                            </ul>
+                            <div class="tab-content">
+                                <div class="tab-pane fade show active" id="tabFaCreate">
+                                    <input type="hidden" name="icon_fa" id="icon_fa_create" value="">
+                                    <div class="icon-picker-grid" id="picker-create"></div>
+                                </div>
+                                <div class="tab-pane fade" id="tabImgCreate">
+                                    <div class="file-upload-zone" onclick="document.getElementById('file-create').click()">
+                                        <input type="file" name="icon" id="file-create" accept="image/*" onchange="previewFile(this,'preview-create',this.parentElement)">
+                                        <div id="preview-create">
+                                            <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2 d-block"></i>
+                                            <span class="small text-muted">Hacé click para seleccionar una imagen (PNG, SVG, JPG)</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-success btn-sm px-4">
+                                <i class="fas fa-save me-2"></i>Agregar Servicio
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Lista de servicios existentes -->
+        <h2 class="h5 mb-3 fw-bold">Servicios Actuales</h2>
+        <div class="row g-4">
+            {% for service in services %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                {% if service.icon %}
+                                    <img src="{{ service.icon.url }}" alt="{{ service.title }}" class="mb-2" style="max-width:48px;max-height:48px;object-fit:contain;">
+                                {% elif service.icon_fa %}
+                                    <i class="fas {{ service.icon_fa }} fa-2x text-danger mb-2"></i>
+                                {% else %}
+                                    <i class="fas fa-concierge-bell fa-2x text-primary mb-2"></i>
+                                {% endif %}
+                                <h5 class="fw-bold mb-0">{{ service.title }}</h5>
+                                <small class="text-muted">Orden: {{ service.order }}</small>
+                            </div>
+                            <span class="badge {% if service.is_active %}bg-success{% else %}bg-secondary{% endif %}">
+                                {% if service.is_active %}Activo{% else %}Inactivo{% endif %}
+                            </span>
+                        </div>
+                        <p class="text-muted small mb-3">{{ service.description }}</p>
+                        {% if service.features %}
+                        <ul class="list-unstyled small text-muted mb-3">
+                            {% for feat in service.features|slice:":3" %}
+                            <li><i class="fas fa-check-circle text-success me-1"></i>{{ feat }}</li>
+                            {% endfor %}
+                            {% if service.features|length > 3 %}
+                            <li class="text-muted fst-italic">… y {{ service.features|length|add:"-3" }} más</li>
+                            {% endif %}
+                        </ul>
+                        {% endif %}
+                        <div class="d-flex gap-1 flex-wrap">
+                            <form method="post" class="d-inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="toggle">
+                                <input type="hidden" name="service_id" value="{{ service.id }}">
+                                <button type="submit" class="btn btn-sm {% if service.is_active %}btn-outline-warning{% else %}btn-outline-success{% endif %}">
+                                    <i class="fas fa-{% if service.is_active %}eye-slash{% else %}eye{% endif %} me-1"></i>{% if service.is_active %}Ocultar{% else %}Mostrar{% endif %}
+                                </button>
+                            </form>
+                            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editModal{{ service.id }}">
+                                <i class="fas fa-edit me-1"></i>Editar
+                            </button>
+                            <form method="post" class="d-inline" onsubmit="return confirm('¿Eliminar este servicio?');">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="delete">
+                                <input type="hidden" name="service_id" value="{{ service.id }}">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal de Edición -->
+                <div class="modal fade" id="editModal{{ service.id }}" tabindex="-1">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header text-white" style="background-color:#df1d2e;">
+                                <h5 class="modal-title"><i class="fas fa-edit me-2"></i>Editar: {{ service.title }}</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+                            <form method="post" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="update">
+                                <input type="hidden" name="service_id" value="{{ service.id }}">
+                                <div class="modal-body">
+                                    <div class="row g-3">
+                                        <div class="col-md-8">
+                                            <label class="form-label fw-bold">Título</label>
+                                            <input type="text" class="form-control" name="title" value="{{ service.title }}" required>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label fw-bold">Orden</label>
+                                            <input type="number" class="form-control" name="order" value="{{ service.order }}" min="0">
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label fw-bold">Descripción</label>
+                                            <textarea class="form-control" name="description" rows="3" required>{{ service.description }}</textarea>
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label fw-bold">Características <span class="text-muted fw-normal">(una por línea)</span></label>
+                                            <textarea class="form-control" name="features" rows="5">{% for f in service.features %}{{ f }}
+{% endfor %}</textarea>
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label fw-bold mb-2">Icono</label>
+                                            <ul class="nav nav-tabs mb-3">
+                                                <li class="nav-item">
+                                                    <button class="nav-link {% if not service.icon %}active{% endif %} small py-1" data-bs-toggle="tab" data-bs-target="#tabFa{{ service.id }}" type="button">
+                                                        <i class="fas fa-icons me-1"></i>Iconos predefinidos
+                                                    </button>
+                                                </li>
+                                                <li class="nav-item">
+                                                    <button class="nav-link {% if service.icon %}active{% endif %} small py-1" data-bs-toggle="tab" data-bs-target="#tabImg{{ service.id }}" type="button">
+                                                        <i class="fas fa-image me-1"></i>Subir imagen
+                                                    </button>
+                                                </li>
+                                            </ul>
+                                            <div class="tab-content">
+                                                <div class="tab-pane fade {% if not service.icon %}show active{% endif %}" id="tabFa{{ service.id }}">
+                                                    <input type="hidden" name="icon_fa" id="icon_fa_{{ service.id }}" value="{{ service.icon_fa }}">
+                                                    <div class="icon-picker-grid" id="picker-{{ service.id }}" data-current="{{ service.icon_fa }}"></div>
+                                                </div>
+                                                <div class="tab-pane fade {% if service.icon %}show active{% endif %}" id="tabImg{{ service.id }}">
+                                                    {% if service.icon %}
+                                                    <div class="mb-2 d-flex align-items-center gap-3">
+                                                        <img src="{{ service.icon.url }}" alt="Icono actual" class="border rounded p-1" style="max-width:60px;max-height:60px;object-fit:contain;">
+                                                        <span class="text-muted small">Icono actual — subí otro para reemplazarlo</span>
+                                                    </div>
+                                                    {% endif %}
+                                                    <div class="file-upload-zone" onclick="document.getElementById('file-{{ service.id }}').click()">
+                                                        <input type="file" name="icon" id="file-{{ service.id }}" accept="image/*" onchange="previewFile(this,'preview-{{ service.id }}',this.parentElement)">
+                                                        <div id="preview-{{ service.id }}">
+                                                            <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2 d-block"></i>
+                                                            <span class="small text-muted">Hacé click para seleccionar una imagen (PNG, SVG, JPG)</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                    <button type="submit" class="btn text-white" style="background-color:#df1d2e;">
+                                        <i class="fas fa-save me-2"></i>Guardar Cambios
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <div class="alert alert-info text-center">
+                    <i class="fas fa-info-circle me-2"></i>No hay servicios registrados aún
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<script>
+const FA_ICONS = [
+    { cls: 'fa-campground',      label: 'Camping'      },
+    { cls: 'fa-swimming-pool',   label: 'Piscina'      },
+    { cls: 'fa-futbol',          label: 'Fútbol'       },
+    { cls: 'fa-volleyball-ball', label: 'Vóley'        },
+    { cls: 'fa-bicycle',         label: 'Bicicletas'   },
+    { cls: 'fa-utensils',        label: 'Proveeduría'  },
+    { cls: 'fa-shower',          label: 'Duchas'       },
+    { cls: 'fa-fire',            label: 'Parrillas'    },
+    { cls: 'fa-tree',            label: 'Naturaleza'   },
+    { cls: 'fa-store',           label: 'Almacén'      },
+    { cls: 'fa-gamepad',         label: 'Juegos'       },
+    { cls: 'fa-music',           label: 'Eventos'      },
+    { cls: 'fa-running',         label: 'Deportes'     },
+    { cls: 'fa-table-tennis',    label: 'Ping Pong'    },
+    { cls: 'fa-sun',             label: 'Verano'       },
+    { cls: 'fa-parking',         label: 'Estacion.'    },
+    { cls: 'fa-wifi',            label: 'Wi-Fi'        },
+    { cls: 'fa-toilet',          label: 'Baños'        },
+    { cls: 'fa-walking',         label: 'Caminatas'    },
+    { cls: 'fa-mountain',        label: 'Montaña'      },
+    { cls: 'fa-star',            label: 'Destacado'    },
+    { cls: 'fa-heart',           label: 'Favorito'     },
+];
+
+function buildIconPicker(containerId, inputId, currentValue) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    const input = document.getElementById(inputId);
+
+    FA_ICONS.forEach(icon => {
+        const lbl = document.createElement('label');
+        lbl.className = 'icon-option';
+
+        const radio = document.createElement('input');
+        radio.type = 'radio';
+        radio.name = inputId + '_radio';
+        radio.value = icon.cls;
+        if (icon.cls === currentValue) radio.checked = true;
+        radio.addEventListener('change', () => {
+            if (input) input.value = icon.cls;
+            // Clear file input in same form
+            const form = lbl.closest('form');
+            if (form) {
+                const fileInput = form.querySelector('input[type="file"]');
+                if (fileInput) { fileInput.value = ''; }
+            }
+        });
+
+        const btn = document.createElement('div');
+        btn.className = 'icon-btn';
+        btn.innerHTML = `<i class="fas ${icon.cls}"></i><span>${icon.label}</span>`;
+
+        lbl.appendChild(radio);
+        lbl.appendChild(btn);
+        container.appendChild(lbl);
+    });
+}
+
+function previewFile(input, previewId, zone) {
+    const preview = document.getElementById(previewId);
+    if (!input.files || !input.files[0] || !preview) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+        preview.innerHTML = `<img src="${e.target.result}" style="max-height:80px;max-width:100%;border-radius:6px;" class="mb-1"><br><small class="text-muted">${input.files[0].name}</small>`;
+        if (zone) zone.classList.add('active');
+        // Deselect any FA radio in same form
+        const form = input.closest('form');
+        if (form) {
+            form.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
+            const hiddenFa = form.querySelector('input[name="icon_fa"]');
+            if (hiddenFa) hiddenFa.value = '';
+        }
+    };
+    reader.readAsDataURL(input.files[0]);
+}
+
+// Build picker for create form
+buildIconPicker('picker-create', 'icon_fa_create', '');
+
+// Build pickers for each edit modal
+document.querySelectorAll('.icon-picker-grid[data-current]').forEach(el => {
+    const current = el.dataset.current || '';
+    const inputId = 'icon_fa_' + el.id.replace('picker-', '');
+    buildIconPicker(el.id, inputId, current);
+});
+</script>
+{% endblock %}

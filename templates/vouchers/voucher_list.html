@@ -1,0 +1,653 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Vouchers - {{ site_config.site_name }}{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="bg-danger text-white py-3" style="background-color: #df1d2e !important;">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-12">
+                <h1 class="h3 fw-bold mb-1">
+                    <i class="fas fa-ticket-alt me-2"></i>Gestión de Vouchers
+                </h1>
+                <p class="mb-0 small">
+                    Administra los vouchers de regalo con código QR
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Acciones Rápidas -->
+<section class="py-3 bg-light">
+    <div class="container">
+        <div class="row g-3">
+            <div class="col-md-6" data-aos="fade-up" data-aos-delay="0">
+                <div class="card border-0 shadow-sm h-100 text-center p-3 quick-action" role="button" id="openScanModalCard">
+                    <i class="fas fa-qrcode fa-3x mb-2" style="color: #df1d2e;"></i>
+                    <h5 class="fw-bold mb-1">Escanear QR</h5>
+                    <p class="text-muted small mb-0">Validar y usar vouchers escaneando el código QR</p>
+                </div>
+            </div>
+            <div class="col-md-6" data-aos="fade-up" data-aos-delay="100">
+                <a href="{% url 'vouchers:create' %}" class="text-decoration-none">
+                    <div class="card border-0 shadow-sm h-100 text-center p-3 quick-action">
+                        <i class="fas fa-plus-circle fa-3x text-success mb-2"></i>
+                        <h5 class="fw-bold mb-1">Crear Voucher</h5>
+                        <p class="text-muted small mb-0">Generar un nuevo voucher de regalo</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Resultado del escaneo (alerts) -->
+<section class="py-0">
+    <div class="container">
+        <div id="scanResult" class="alert d-none mb-0" role="alert"></div>
+    </div>
+</section>
+
+<!-- Stats Cards -->
+<section class="py-3 bg-light">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-6 col-md-3" data-aos="fade-up" data-aos-delay="0">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center p-3">
+                        <div class="mb-2" style="color: #df1d2e;">
+                            <i class="fas fa-ticket-alt fa-2x"></i>
+                        </div>
+                        <h3 class="h3 fw-bold mb-1">{{ stats.total|default:0 }}</h3>
+                        <p class="text-muted small mb-0">Total Vouchers</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-3" data-aos="fade-up" data-aos-delay="100">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center p-3">
+                        <div class="text-success mb-2">
+                            <i class="fas fa-check-circle fa-2x"></i>
+                        </div>
+                        <h3 class="h3 fw-bold mb-1">{{ stats.active|default:0 }}</h3>
+                        <p class="text-muted small mb-0">Activos</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-3" data-aos="fade-up" data-aos-delay="200">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center p-3">
+                        <div class="text-info mb-2">
+                            <i class="fas fa-clipboard-check fa-2x"></i>
+                        </div>
+                        <h3 class="h3 fw-bold mb-1">{{ stats.used|default:0 }}</h3>
+                        <p class="text-muted small mb-0">Usados</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-3" data-aos="fade-up" data-aos-delay="300">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center p-3">
+                        <div class="text-danger mb-2">
+                            <i class="fas fa-times-circle fa-2x"></i>
+                        </div>
+                        <h3 class="h3 fw-bold mb-1">{{ stats.expired|default:0 }}</h3>
+                        <p class="text-muted small mb-0">Expirados</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Filtros y Búsqueda -->
+<section class="py-3">
+    <div class="container">
+        <div class="card border-0 shadow-sm" data-aos="fade-up">
+            <div class="card-body p-3">
+                <form method="get" class="row g-3">
+                    <div class="col-md-4">
+                        <label for="search" class="form-label small fw-bold mb-1">Buscar</label>
+                        <input type="text" class="form-control form-control-sm" id="search" name="search" 
+                               value="{{ search }}" placeholder="Código, nombre, email, teléfono...">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="type" class="form-label small fw-bold mb-1">Tipo</label>
+                        <select class="form-select form-select-sm" id="type" name="type">
+                            <option value="">Todos</option>
+                            <option value="amount" {% if type_filter == 'amount' %}selected{% endif %}>Monto Fijo</option>
+                            <option value="percentage" {% if type_filter == 'percentage' %}selected{% endif %}>Porcentaje</option>
+                            <option value="free_text" {% if type_filter == 'free_text' %}selected{% endif %}>Texto Libre</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="status" class="form-label small fw-bold mb-1">Estado</label>
+                        <select class="form-select form-select-sm" id="status" name="status">
+                            <option value="">Todos</option>
+                            <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Activos</option>
+                            <option value="used" {% if status_filter == 'used' %}selected{% endif %}>Usados</option>
+                            <option value="expired" {% if status_filter == 'expired' %}selected{% endif %}>Expirados</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-sm w-100 text-white" style="background-color: #df1d2e;">
+                            <i class="fas fa-search me-2"></i>Filtrar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Lista de Vouchers -->
+<section class="py-3">
+    <div class="container">
+        <div class="card border-0 shadow-sm" data-aos="fade-up">
+            <div class="card-body p-3">
+                <div class="table-responsive">
+                    <table class="table table-hover table-sm mb-0">
+                        <thead class="text-white" style="background-color: #df1d2e;">
+                            <tr>
+                                <th>Código</th>
+                                <th>Cliente</th>
+                                <th>Tipo</th>
+                                <th>Valor/Beneficio</th>
+                                <th>Envío</th>
+                                <th>Estado</th>
+                                <th>Válido Hasta</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for voucher in vouchers %}
+                            <tr data-voucher-code="{{ voucher.voucher_code }}">
+                                <td><code class="fw-bold">{{ voucher.voucher_code }}</code></td>
+                                <td>
+                                    <div class="fw-bold">{{ voucher.client_name }}</div>
+                                    <small class="text-muted">{{ voucher.client_email }}</small>
+                                </td>
+                                <td>
+                                    {% if voucher.voucher_type == 'amount' %}
+                                    <span class="badge bg-success"><i class="fas fa-dollar-sign me-1"></i>Monto Fijo</span>
+                                    {% elif voucher.voucher_type == 'percentage' %}
+                                    <span class="badge bg-warning text-dark"><i class="fas fa-percent me-1"></i>% Descuento</span>
+                                    {% else %}
+                                    <span class="badge bg-info"><i class="fas fa-gift me-1"></i>Texto Libre</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if voucher.voucher_type == 'amount' %}
+                                        <strong>${{ voucher.value }}</strong>
+                                    {% elif voucher.voucher_type == 'percentage' %}
+                                        <strong>{{ voucher.percentage }}% OFF</strong>
+                                    {% else %}
+                                        <small>{{ voucher.benefit_description|truncatewords:8 }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="d-flex flex-column gap-1">
+                                        <div>
+                                            {% if voucher.sent %}
+                                            <span class="badge bg-success"><i class="fas fa-envelope me-1"></i>Email: Sí</span>
+                                            <small class="text-muted ms-1">{{ voucher.sent_date|date:"d/m/Y H:i"|default:"" }}</small>
+                                            {% else %}
+                                            <span class="badge bg-secondary"><i class="fas fa-envelope me-1"></i>Email: No</span>
+                                            {% endif %}
+                                        </div>
+                                        <div>
+                                            {% if voucher.sent_whatsapp %}
+                                            <span class="badge bg-success"><i class="fab fa-whatsapp me-1"></i>WA: Sí</span>
+                                            <small class="text-muted ms-1">{{ voucher.sent_whatsapp_date|date:"d/m/Y H:i"|default:"" }}</small>
+                                            {% else %}
+                                            <span class="badge bg-secondary"><i class="fab fa-whatsapp me-1"></i>WA: No</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if voucher.status == 'active' %}
+                                    <span class="badge bg-success voucher-status-badge" data-status="active">Activo</span>
+                                    {% elif voucher.status == 'used' %}
+                                    <span class="badge bg-info voucher-status-badge" data-status="used">Usado</span>
+                                    {% elif voucher.status == 'expired' %}
+                                    <span class="badge bg-danger voucher-status-badge" data-status="expired">Expirado</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ voucher.expiration_date|date:"d/m/Y" }}</td>
+                                <td>
+                                    <a href="{% url 'vouchers:detail' voucher.voucher_code %}" 
+                                       class="btn btn-sm text-white" style="background-color: #df1d2e;">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="8" class="text-center text-muted py-4">
+                                    <i class="fas fa-inbox fa-3x mb-3"></i>
+                                    <p class="mb-0">No hay vouchers disponibles</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .quick-action {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .quick-action:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2) !important;
+    }
+
+    .voucher-modal-header {
+        background: linear-gradient(135deg, #505c4e 0%, #df1d2e 85%, #ffc628 140%);
+    }
+    .qr-reader-frame {
+        width: 100%;
+        max-width: 640px;
+        margin: 0 auto;
+        border-radius: 12px;
+        overflow: hidden;
+        background: #111;
+        min-height: 360px;
+    }
+    .voucher-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+        background: rgba(223, 29, 46, 0.08);
+        color: #df1d2e;
+        border: 1px solid rgba(223, 29, 46, 0.25);
+    }
+    .voucher-pill.voucher-pill--ok {
+        background: rgba(72, 255, 0, 0.10);
+        color: #2a2a2a;
+        border-color: rgba(72, 255, 0, 0.35);
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/html5-qrcode"></script>
+
+<!-- Modal Scanner QR + ingreso manual -->
+<div class="modal fade" id="scanQrModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header voucher-modal-header">
+                <h5 class="modal-title text-white fw-bold">
+                    <i class="fas fa-camera me-2"></i>Escáner QR
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center">
+                    <div id="qr-reader" class="qr-reader-frame"></div>
+                    <div id="scanHint" class="small text-muted mt-2">
+                        Apuntá la cámara al código QR del voucher.
+                    </div>
+                    <div id="scanLoading" class="d-none mt-3">
+                        <div class="spinner-border" role="status" aria-hidden="true"></div>
+                        <div class="small text-muted mt-2">Iniciando cámara…</div>
+                    </div>
+                </div>
+
+                <hr class="my-4" />
+
+                <div class="text-center">
+                    <div class="fw-bold mb-2">O ingresá el código manualmente</div>
+                    <form id="manualModalForm" class="row g-2 justify-content-center" autocomplete="off">
+                        <div class="col-12 col-md-8">
+                            <input type="text" class="form-control" id="manualModalCode" placeholder="Código del voucher" required>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <button type="submit" class="btn w-100 text-dark fw-bold" style="background-color: #48ff00;">
+                                <i class="fas fa-search me-2"></i>Validar
+                            </button>
+                        </div>
+                    </form>
+                    <div class="small text-muted mt-2">Tip: si la cámara no está disponible, usá el ingreso manual.</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para confirmar uso -->
+<div class="modal fade" id="useVoucherModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header voucher-modal-header">
+                <h5 class="modal-title text-white fw-bold">
+                    <i class="fas fa-check-circle me-2"></i>Voucher
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body" id="voucherDetails"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn text-dark fw-bold" style="background-color: #48ff00;" id="confirmUseBtn">
+                    <i class="fas fa-check me-2"></i>Confirmar Uso
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let html5QrCode = null;
+let isScanning = false;
+let scanLocked = false;
+let currentVoucherCode = null;
+let lastVoucherData = null;
+
+const scanModalEl = document.getElementById('scanQrModal');
+const scanModal = new bootstrap.Modal(scanModalEl);
+
+function setScanLoading(isLoading) {
+    const loading = document.getElementById('scanLoading');
+    const hint = document.getElementById('scanHint');
+    if (isLoading) {
+        loading.classList.remove('d-none');
+        hint.classList.add('d-none');
+    } else {
+        loading.classList.add('d-none');
+        hint.classList.remove('d-none');
+    }
+}
+
+async function startScanner() {
+    if (isScanning) return;
+    scanLocked = false;
+    setScanLoading(true);
+
+    try {
+        const cameras = await Html5Qrcode.getCameras();
+        if (!cameras || cameras.length === 0) {
+            throw new Error('No se detectaron cámaras disponibles');
+        }
+
+        const preferred = cameras.find(c => (c.label || '').toLowerCase().includes('back') || (c.label || '').toLowerCase().includes('rear')) || cameras[0];
+        html5QrCode = new Html5Qrcode('qr-reader');
+
+        await html5QrCode.start(
+            { deviceId: { exact: preferred.id } },
+            { fps: 10, qrbox: { width: 260, height: 260 } },
+            onScanSuccess,
+            onScanError
+        );
+
+        isScanning = true;
+    } catch (err) {
+        showError((err && err.message) ? err.message : ('Error al iniciar la cámara: ' + err));
+        scanModal.hide();
+    } finally {
+        setScanLoading(false);
+    }
+}
+
+async function stopScanner() {
+    scanLocked = true;
+    if (!html5QrCode) return;
+
+    try {
+        if (isScanning) {
+            await html5QrCode.stop();
+        }
+    } catch (e) {
+        // ignorar
+    }
+
+    try {
+        html5QrCode.clear();
+    } catch (e) {
+        // ignorar
+    }
+
+    html5QrCode = null;
+    isScanning = false;
+}
+
+document.getElementById('openScanModalCard').addEventListener('click', function() {
+    scanModal.show();
+});
+
+scanModalEl.addEventListener('shown.bs.modal', function() {
+    startScanner();
+    document.getElementById('manualModalCode').value = '';
+    document.getElementById('manualModalCode').focus();
+});
+
+scanModalEl.addEventListener('hidden.bs.modal', function() {
+    stopScanner();
+});
+
+function onScanSuccess(decodedText, decodedResult) {
+    if (scanLocked) return;
+    scanLocked = true;
+
+    stopScanner().finally(() => {
+        scanModal.hide();
+        validateVoucher(decodedText);
+    });
+}
+
+function onScanError(errorMessage) {
+    // Errores normales del scanner, ignorar
+}
+
+function validateVoucher(code) {
+    fetch('{% url "vouchers:validate" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({ voucher_code: code })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            currentVoucherCode = code;
+            showVoucherDetails(data.voucher);
+        } else {
+            showError(data.error);
+        }
+    })
+    .catch(error => {
+        showError('Error de conexión: ' + error);
+    });
+}
+
+function showVoucherDetails(voucher) {
+    lastVoucherData = voucher;
+    const voucherCode = voucher.voucher_code || voucher.code || voucher.voucherCode || '';
+    const clientName = voucher.client_name || '';
+    const clientEmail = voucher.client_email || '';
+    const clientPhone = voucher.client_phone || '';
+    const clientId = voucher.client_id || '';
+
+    const status = voucher.status || '';
+    const statusDisplay = voucher.status_display || status;
+
+    const voucherType = voucher.voucher_type || '';
+    const voucherTypeDisplay = voucher.voucher_type_display || voucherType;
+
+    const value = voucher.value ?? voucher.amount ?? '';
+    const percentage = voucher.percentage ?? '';
+    const benefitDescription = voucher.benefit_description || '';
+    const description = voucher.description || '';
+    const serviceType = voucher.service_type || '';
+
+    const issueDate = voucher.issue_date || '';
+    const expirationDate = voucher.expiration_date || '';
+    const daysLeft = (voucher.days_left ?? voucher.days_until_expiration ?? null);
+
+    const sent = (voucher.sent === true) ? 'Sí' : (voucher.sent === false ? 'No' : '');
+    const sentDate = voucher.sent_date || '';
+
+    const sentWhatsapp = (voucher.sent_whatsapp === true) ? 'Sí' : (voucher.sent_whatsapp === false ? 'No' : '');
+    const sentWhatsappDate = voucher.sent_whatsapp_date || '';
+
+    const usedDate = voucher.used_date || '';
+    const usedBy = voucher.used_by || '';
+
+    const pillClass = (status === 'active') ? 'voucher-pill voucher-pill--ok' : 'voucher-pill';
+    const daysLeftHtml = (daysLeft === null || daysLeft === undefined || daysLeft === '')
+        ? ''
+        : `<div class="mt-2"><span class="voucher-pill"><i class="fas fa-hourglass-half"></i>${daysLeft} días restantes</span></div>`;
+
+    let benefitHtml = '';
+    if (voucherType === 'amount' && value !== '' && value !== null && value !== undefined) {
+        benefitHtml = `<tr><th>Valor</th><td class="fw-bold">$${value}</td></tr>`;
+    } else if (voucherType === 'percentage' && percentage !== '' && percentage !== null && percentage !== undefined) {
+        benefitHtml = `<tr><th>Descuento</th><td class="fw-bold">${percentage}%</td></tr>`;
+    } else if (voucherType === 'free_text' && benefitDescription) {
+        benefitHtml = `<tr><th>Beneficio</th><td class="fw-bold">${benefitDescription}</td></tr>`;
+    } else if (value !== '' && value !== null && value !== undefined) {
+        benefitHtml = `<tr><th>Valor</th><td class="fw-bold">$${value}</td></tr>`;
+    }
+
+    const html = `
+        <div class="text-center mb-3">
+            <div class="h4 mb-1" style="color:#df1d2e; font-weight:800;">${voucherCode}</div>
+            <div class="d-flex justify-content-center align-items-center gap-2 flex-wrap">
+                <span class="${pillClass}"><i class="fas fa-circle-check"></i>${statusDisplay}</span>
+                ${voucherTypeDisplay ? `<span class="voucher-pill"><i class="fas fa-ticket"></i>${voucherTypeDisplay}</span>` : ''}
+            </div>
+            ${daysLeftHtml}
+        </div>
+        <table class="table table-sm align-middle">
+            <tr><th style="width:42%">Cliente</th><td>${clientName}</td></tr>
+            ${clientId ? `<tr><th>ID Cliente</th><td>${clientId}</td></tr>` : ''}
+            <tr><th>Email</th><td>${clientEmail}</td></tr>
+            <tr><th>Teléfono</th><td>${clientPhone}</td></tr>
+            ${benefitHtml}
+            ${serviceType ? `<tr><th>Servicio</th><td>${serviceType}</td></tr>` : ''}
+            ${description ? `<tr><th>Descripción</th><td>${description}</td></tr>` : ''}
+            ${issueDate ? `<tr><th>Emitido</th><td>${issueDate}</td></tr>` : ''}
+            <tr><th>Válido hasta</th><td>${expirationDate}</td></tr>
+            ${(sent !== '') ? `<tr><th>Enviado (Email)</th><td>${sent}${sentDate ? ` (${sentDate})` : ''}</td></tr>` : ''}
+            ${(sentWhatsapp !== '') ? `<tr><th>Enviado (WhatsApp)</th><td>${sentWhatsapp}${sentWhatsappDate ? ` (${sentWhatsappDate})` : ''}</td></tr>` : ''}
+            ${usedDate ? `<tr><th>Usado</th><td>${usedDate}${usedBy ? ` por ${usedBy}` : ''}</td></tr>` : ''}
+        </table>
+    `;
+
+    document.getElementById('voucherDetails').innerHTML = html;
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('useVoucherModal')).show();
+
+    const confirmBtn = document.getElementById('confirmUseBtn');
+    if (status && status !== 'active') {
+        confirmBtn.setAttribute('disabled', 'disabled');
+        confirmBtn.classList.add('disabled');
+    } else {
+        confirmBtn.removeAttribute('disabled');
+        confirmBtn.classList.remove('disabled');
+    }
+}
+
+function showError(message) {
+    const resultDiv = document.getElementById('scanResult');
+    resultDiv.className = 'alert alert-danger';
+    resultDiv.innerHTML = `<i class="fas fa-times-circle me-2"></i>${message}`;
+    resultDiv.classList.remove('d-none');
+
+    setTimeout(() => {
+        resultDiv.classList.add('d-none');
+    }, 5000);
+}
+
+function showSuccess(message) {
+    const resultDiv = document.getElementById('scanResult');
+    resultDiv.className = 'alert alert-success';
+    resultDiv.innerHTML = `<i class="fas fa-check-circle me-2"></i>${message}`;
+    resultDiv.classList.remove('d-none');
+}
+
+document.getElementById('confirmUseBtn').addEventListener('click', function() {
+    fetch('{% url "vouchers:use" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({ voucher_code: currentVoucherCode })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showSuccess(data.message);
+            // Actualizar modal con estado usado (sin recargar)
+            if (lastVoucherData) {
+                lastVoucherData.status = (data.voucher && data.voucher.status) ? data.voucher.status : 'used';
+                lastVoucherData.status_display = (data.voucher && data.voucher.status_display) ? data.voucher.status_display : 'Usado';
+                lastVoucherData.used_date = data.used_date || (data.voucher ? data.voucher.used_date : null);
+                lastVoucherData.used_by = (data.voucher && data.voucher.used_by) ? data.voucher.used_by : (lastVoucherData.used_by || '');
+                showVoucherDetails(lastVoucherData);
+            }
+
+            // Actualizar badge en la tabla
+            const row = document.querySelector(`tr[data-voucher-code="${currentVoucherCode}"]`);
+            if (row) {
+                const badge = row.querySelector('.voucher-status-badge');
+                if (badge) {
+                    badge.className = 'badge bg-info voucher-status-badge';
+                    badge.textContent = 'Usado';
+                    badge.setAttribute('data-status', 'used');
+                }
+            }
+
+            // Mantener el código actual por si se quiere ver el detalle, pero evitar reuso
+            // (el botón queda deshabilitado por showVoucherDetails)
+        } else {
+            showError(data.error);
+        }
+    })
+    .catch(error => {
+        showError('Error de conexión: ' + error);
+    });
+});
+
+document.getElementById('manualModalForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const code = document.getElementById('manualModalCode').value.trim();
+    if (!code) return;
+    stopScanner().finally(() => {
+        scanModal.hide();
+        validateVoucher(code);
+    });
+});
+
+// Autostart desde /scanner/ (redirige a ?scan=1)
+document.addEventListener('DOMContentLoaded', function() {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('scan') === '1') {
+        scanModal.show();
+    }
+});
+</script>
+{% endblock %}

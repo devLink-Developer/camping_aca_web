@@ -1,0 +1,204 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Configuración - {{ site_config.site_name }}{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="bg-danger text-white py-3" style="background-color: #df1d2e !important;">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-12">
+                <h1 class="h3 fw-bold mb-1">
+                    <i class="fas fa-cog me-2"></i>Configuración
+                </h1>
+                <p class="mb-0 small">Administra la configuración general del sitio web</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Accesos Rápidos -->
+<section class="py-3 bg-light">
+    <div class="container">
+        <h5 class="text-center mb-3 fw-bold">Accesos Rápidos</h5>
+        <div class="row g-2">
+            <div class="col-6 col-md-2">
+                <a href="{% url 'dashboard:manage_services' %}" class="text-decoration-none">
+                    <div class="card border-0 shadow-sm h-100 text-center p-2 quick-link-card">
+                        <i class="fas fa-concierge-bell fa-2x mb-2" style="color: #df1d2e;"></i>
+                        <h6 class="fw-bold mb-0 small">Servicios</h6>
+                    </div>
+                </a>
+            </div>
+            <div class="col-6 col-md-2">
+                <a href="{% url 'dashboard:manage_gallery' %}" class="text-decoration-none">
+                    <div class="card border-0 shadow-sm h-100 text-center p-2 quick-link-card">
+                        <i class="fas fa-images fa-2x text-success mb-2"></i>
+                        <h6 class="fw-bold mb-0 small">Galería</h6>
+                    </div>
+                </a>
+            </div>
+            <div class="col-6 col-md-2">
+                <a href="{% url 'dashboard:manage_prices' %}" class="text-decoration-none">
+                    <div class="card border-0 shadow-sm h-100 text-center p-2 quick-link-card">
+                        <i class="fas fa-dollar-sign fa-2x text-info mb-2"></i>
+                        <h6 class="fw-bold mb-0 small">Precios</h6>
+                    </div>
+                </a>
+            </div>
+            <div class="col-6 col-md-2">
+                <a href="{% url 'dashboard:manage_faqs' %}" class="text-decoration-none">
+                    <div class="card border-0 shadow-sm h-100 text-center p-2 quick-link-card">
+                        <i class="fas fa-question-circle fa-2x text-warning mb-2"></i>
+                        <h6 class="fw-bold mb-0 small">FAQs</h6>
+                    </div>
+                </a>
+            </div>
+            <div class="col-6 col-md-2">
+                <a href="{% url 'dashboard:manage_news' %}" class="text-decoration-none">
+                    <div class="card border-0 shadow-sm h-100 text-center p-2 quick-link-card">
+                        <i class="fas fa-newspaper fa-2x text-primary mb-2"></i>
+                        <h6 class="fw-bold mb-0 small">Novedades</h6>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Formulario de Configuración -->
+<section class="py-3">
+    <div class="container">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <!-- Información General -->
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header text-white py-2" style="background-color: #df1d2e;">
+                    <h3 class="h6 mb-0"><i class="fas fa-info-circle me-2"></i>Información General</h3>
+                </div>
+                <div class="card-body p-3">
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <label for="site_name" class="form-label small fw-bold mb-1">Nombre del Sitio</label>
+                            <input type="text" class="form-control form-control-sm" id="site_name" name="site_name" value="{{ site_config.site_name }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="tagline" class="form-label small fw-bold mb-1">Lema/Tagline</label>
+                            <input type="text" class="form-control form-control-sm" id="tagline" name="tagline" value="{{ site_config.tagline }}">
+                        </div>
+                        <div class="col-md-12">
+                            <label for="hero_image" class="form-label small fw-bold mb-1">Imagen Hero</label>
+                            {% if site_config.hero_image %}
+                            <div class="mb-1">
+                                <img src="{{ site_config.hero_image.url }}" alt="Hero" class="img-thumbnail" style="max-height: 80px;">
+                            </div>
+                            {% endif %}
+                            <input type="file" class="form-control form-control-sm" id="hero_image" name="hero_image" accept="image/*">
+                            <div class="form-text small">Recomendado 1920x1080px (mínimo: 1920px de ancho o 1080px de alto)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Información de Contacto -->
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header bg-success text-white py-2">
+                    <h3 class="h6 mb-0"><i class="fas fa-address-book me-2"></i>Contacto</h3>
+                </div>
+                <div class="card-body p-3">
+                    <div class="row g-2">
+                        <div class="col-md-3">
+                            <label for="phone" class="form-label small fw-bold mb-1">
+                                <i class="fas fa-phone text-success me-1"></i>Teléfono
+                            </label>
+                            <input type="tel" class="form-control form-control-sm" id="phone" name="phone" value="{{ site_config.phone }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="email" class="form-label small fw-bold mb-1">
+                                <i class="fas fa-envelope text-success me-1"></i>Email
+                            </label>
+                            <input type="email" class="form-control form-control-sm" id="email" name="email" value="{{ site_config.email }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="address" class="form-label small fw-bold mb-1">
+                                <i class="fas fa-map-marker-alt text-success me-1"></i>Dirección
+                            </label>
+                            <input type="text" class="form-control form-control-sm" id="address" name="address" value="{{ site_config.address }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="opening_hours" class="form-label small fw-bold mb-1">
+                                <i class="fas fa-clock text-success me-1"></i>Horario
+                            </label>
+                            <input type="text" class="form-control form-control-sm" id="opening_hours" name="opening_hours" value="{{ site_config.opening_hours }}">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Redes Sociales -->
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header bg-success text-white py-2">
+                    <h3 class="h6 mb-0"><i class="fas fa-share-alt me-2"></i>Redes Sociales</h3>
+                </div>
+                <div class="card-body p-3">
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <label for="instagram_url" class="form-label small fw-bold mb-1">
+                                <i class="fab fa-instagram text-danger me-1"></i>Instagram
+                            </label>
+                            <input type="url" class="form-control form-control-sm" id="instagram_url" name="instagram_url" value="{{ site_config.instagram_url }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="facebook_url" class="form-label small fw-bold mb-1">
+                                <i class="fab fa-facebook text-info me-1"></i>Facebook
+                            </label>
+                            <input type="url" class="form-control form-control-sm" id="facebook_url" name="facebook_url" value="{{ site_config.facebook_url }}">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Alerta Especial -->
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header bg-warning py-2">
+                    <h3 class="h6 mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Alerta Especial</h3>
+                </div>
+                <div class="card-body p-3">
+                    <div class="form-check form-switch mb-2">
+                        <input class="form-check-input" type="checkbox" id="is_alert_active" name="is_alert_active" {% if site_config.is_alert_active %}checked{% endif %}>
+                        <label class="form-check-label small fw-bold" for="is_alert_active">
+                            Activar Alerta
+                        </label>
+                    </div>
+                    <label for="special_alert" class="form-label small fw-bold mb-1">Mensaje</label>
+                    <textarea class="form-control form-control-sm" id="special_alert" name="special_alert" rows="2">{{ site_config.special_alert }}</textarea>
+                </div>
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="text-center">
+                <button type="submit" class="btn btn-sm px-4 me-2 text-white" style="background-color: #df1d2e;">
+                    <i class="fas fa-save me-1"></i>Guardar
+                </button>
+                <a href="{% url 'dashboard:home' %}" class="btn btn-outline-secondary btn-sm px-4">
+                    <i class="fas fa-times me-1"></i>Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .quick-link-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .quick-link-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2) !important;
+    }
+</style>
+{% endblock %}

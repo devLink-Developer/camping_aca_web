@@ -1,0 +1,35 @@
+{# Partial: paginación para chatbot_client_messages #}
+{% with p=pagination phone=phone %}
+<nav aria-label="Paginación mensajes">
+  <ul class="pagination pagination-sm mb-0 flex-wrap">
+
+    {# Primera #}
+    <li class="page-item {% if not p.has_prev %}disabled{% endif %}">
+      <a class="page-link" href="?page=1" title="Primera">&laquo;&laquo;</a>
+    </li>
+
+    {# Anterior #}
+    <li class="page-item {% if not p.has_prev %}disabled{% endif %}">
+      <a class="page-link" href="?page={{ p.prev_page }}">&laquo;</a>
+    </li>
+
+    {# Ventana de páginas #}
+    {% for pg in p.page_range %}
+      <li class="page-item {% if pg == p.page %}active{% endif %}">
+        <a class="page-link" href="?page={{ pg }}">{{ pg }}</a>
+      </li>
+    {% endfor %}
+
+    {# Siguiente #}
+    <li class="page-item {% if not p.has_next %}disabled{% endif %}">
+      <a class="page-link" href="?page={{ p.next_page }}">&raquo;</a>
+    </li>
+
+    {# Última #}
+    <li class="page-item {% if not p.has_next %}disabled{% endif %}">
+      <a class="page-link" href="?page={{ p.total_pages }}" title="Última">&raquo;&raquo;</a>
+    </li>
+
+  </ul>
+</nav>
+{% endwith %}

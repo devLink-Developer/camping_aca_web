@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Gestión de Precios - {{ site_config.site_name }}{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="bg-success text-white py-3">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="h3 fw-bold mb-1">
+                    <i class="fas fa-dollar-sign me-2"></i>Gestión de Precios
+                </h1>
+                <p class="mb-0 small">Administra las tarifas y precios del camping</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <a href="{% url 'dashboard:settings' %}" class="btn btn-light btn-sm">
+                    <i class="fas fa-arrow-left me-1"></i>Volver
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Formulario para nuevo precio -->
+<section class="py-3">
+    <div class="container">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-success text-white py-2">
+                <h3 class="h6 mb-0"><i class="fas fa-plus-circle me-2"></i>Agregar Nuevo Precio</h3>
+            </div>
+            <div class="card-body p-3">
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="create">
+                    <div class="row g-2">
+                        <div class="col-md-3">
+                            <label for="category_id" class="form-label small fw-bold mb-1">Categoría</label>
+                            <select class="form-select form-select-sm" id="category_id" name="category_id" required>
+                                <option value="">Seleccionar...</option>
+                                {% for category in categories %}
+                                <option value="{{ category.id }}">{{ category.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="item_name" class="form-label small fw-bold mb-1">Título</label>
+                            <input type="text" class="form-control form-control-sm" id="item_name" name="item_name" placeholder="Ej: Parcela Diaria" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="description" class="form-label small fw-bold mb-1">Descripción</label>
+                            <input type="text" class="form-control form-control-sm" id="description" name="description" placeholder="Por día">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="amount" class="form-label small fw-bold mb-1">Precio (ARS)</label>
+                            <input type="number" class="form-control form-control-sm" id="amount" name="amount" step="0.01" placeholder="5000.00" required>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-success btn-sm px-4">
+                                <i class="fas fa-save me-2"></i>Agregar Precio
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Lista de precios existentes -->
+        <h2 class="h5 mb-3 fw-bold">Precios Actuales</h2>
+        
+        {% regroup prices by category as price_groups %}
+        
+        <div class="row g-4">
+            {% for group in price_groups %}
+            <div class="col-md-6 col-lg-4" data-aos="fade-up">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">{{ group.grouper.name }}</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        {% for price in group.list %}
+                        <div class="d-flex justify-content-between align-items-start mb-3 pb-3 border-bottom">
+                            <div>
+                                <p class="mb-1 fw-bold">{{ price.item_name }}</p>
+                                <p class="text-muted small mb-1">{{ price.description }}</p>
+                                <h4 class="text-success mb-0">${{ price.amount }}</h4>
+                                <span class="badge {% if price.is_active %}bg-success{% else %}bg-secondary{% endif %} mt-1">
+                                    {% if price.is_active %}Activo{% else %}Inactivo{% endif %}
+                                </span>
+                            </div>
+                            <div class="d-flex flex-column gap-1">
+                                <form method="post">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="toggle">
+                                    <input type="hidden" name="price_id" value="{{ price.id }}">
+                                    <button type="submit" class="btn btn-sm btn-warning">
+                                        <i class="fas fa-toggle-{% if price.is_active %}on{% else %}off{% endif %}"></i>
+                                    </button>
+                                </form>
+                                <form method="post" onsubmit="return confirm('¿Estás seguro de eliminar este precio?');">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="delete">
+                                    <input type="hidden" name="price_id" value="{{ price.id }}">
+                                    <button type="submit" class="btn btn-sm btn-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <div class="alert alert-secondary text-center">
+                    <i class="fas fa-info-circle me-2"></i>No hay precios registrados aún
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

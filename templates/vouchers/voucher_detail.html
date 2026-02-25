@@ -1,0 +1,225 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Voucher {{ voucher.voucher_code }} - {{ site_config.site_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .voucher-hero { padding: 10px 0 !important; }
+    .voucher-hero h1 { font-size: 1.05rem; margin-bottom: 2px !important; }
+    .voucher-hero p { margin-bottom: 0 !important; }
+    .voucher-card .card-body { padding: 12px !important; }
+    .voucher-qr-img { max-width: 200px !important; }
+    .voucher-code { font-size: .92rem; word-break: break-word; }
+    .voucher-section { padding: 12px 0 !important; }
+    .table-compact th { width: 40%; white-space: nowrap; }
+    .table-compact td { width: 60%; }
+    .table-compact th,
+    .table-compact td { padding-top: .35rem; padding-bottom: .35rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="bg-danger text-white voucher-hero" style="background-color: #df1d2e !important;">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="h3 fw-bold mb-1">
+                    <i class="fas fa-ticket-alt me-2"></i>Voucher {{ voucher.voucher_code }}
+                </h1>
+                <p class="mb-0 small">
+                    {{ voucher.client_name }}
+                </p>
+            </div>
+            <div class="col-md-4 text-end">
+                <a href="{% url 'vouchers:list' %}" class="btn btn-light btn-sm">
+                    <i class="fas fa-arrow-left me-1"></i>Volver
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Voucher Details -->
+<section class="voucher-section">
+    <div class="container">
+        <div class="row">
+            <!-- QR Code y Estado -->
+            <div class="col-md-4 mb-3">
+                <div class="card border-0 shadow-sm text-center voucher-card" data-aos="zoom-in">
+                    <div class="card-body">
+                        <div class="mb-2">
+                            {% if voucher.status == 'active' %}
+                            <span class="badge bg-success mb-3">ACTIVO</span>
+                            {% elif voucher.status == 'used' %}
+                            <span class="badge bg-info mb-3">USADO</span>
+                            {% elif voucher.status == 'expired' %}
+                            <span class="badge bg-danger mb-3">EXPIRADO</span>
+                            {% endif %}
+                        </div>
+                        
+                        {% if voucher.qr_code %}
+                        <img src="{{ voucher.qr_code.url }}" alt="QR Code" class="img-fluid mb-2 voucher-qr-img">
+                        {% endif %}
+                        
+                        <div class="voucher-code fw-bold mb-2">{{ voucher.voucher_code }}</div>
+                        <div class="small text-muted mb-2">El ID también está impreso en el QR</div>
+                        
+                        <div class="d-grid gap-2">
+                            <a href="{{ voucher.qr_code.url }}" download class="btn btn-sm text-white" style="background-color: #df1d2e;">
+                                <i class="fas fa-download me-2"></i>Descargar QR
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Información Detallada -->
+            <div class="col-md-8 mb-3">
+                <div class="card border-0 shadow-sm voucher-card" data-aos="fade-up">
+                    <div class="card-header text-white" style="background-color: #df1d2e;">
+                        <h3 class="h6 mb-0"><i class="fas fa-info-circle me-2"></i>Información del Voucher</h3>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-sm mb-0 table-compact">
+                            <tbody>
+                                <tr class="table-light">
+                                    <th colspan="2">Cliente</th>
+                                </tr>
+                                <tr><th>Nombre</th><td class="fw-bold">{{ voucher.client_name }}</td></tr>
+                                <tr><th>Email</th><td>{{ voucher.client_email }}</td></tr>
+                                <tr><th>Teléfono</th><td>{{ voucher.client_phone|default:"No especificado" }}</td></tr>
+                                <tr><th>DNI/Documento</th><td>{{ voucher.client_id|default:"No especificado" }}</td></tr>
+
+                                <tr class="table-light">
+                                    <th colspan="2">Beneficio</th>
+                                </tr>
+                                <tr>
+                                    <th>Tipo</th>
+                                    <td>
+                                        {% if voucher.voucher_type == 'amount' %}
+                                        <span class="badge bg-success">Monto Fijo</span>
+                                        {% elif voucher.voucher_type == 'percentage' %}
+                                        <span class="badge bg-warning text-dark">% Descuento</span>
+                                        {% else %}
+                                        <span class="badge bg-info">Texto Libre</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>
+                                        {% if voucher.voucher_type == 'amount' %}Monto
+                                        {% elif voucher.voucher_type == 'percentage' %}Descuento
+                                        {% else %}Beneficio{% endif %}
+                                    </th>
+                                    <td class="fw-bold" style="color:#2f8f2f;">
+                                        {% if voucher.voucher_type == 'amount' %}
+                                            ${{ voucher.value }}
+                                        {% elif voucher.voucher_type == 'percentage' %}
+                                            {{ voucher.percentage }}% OFF
+                                        {% else %}
+                                            {{ voucher.benefit_description }}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% if voucher.service_type %}
+                                <tr><th>Servicio</th><td>{{ voucher.service_type }}</td></tr>
+                                {% endif %}
+                                {% if voucher.description %}
+                                <tr><th>Descripción</th><td>{{ voucher.description }}</td></tr>
+                                {% endif %}
+
+                                <tr class="table-light">
+                                    <th colspan="2">Vigencia</th>
+                                </tr>
+                                <tr><th>Emisión</th><td>{{ voucher.issue_date|date:"d/m/Y" }}</td></tr>
+                                <tr><th>Expiración</th><td>{{ voucher.expiration_date|date:"d/m/Y" }}</td></tr>
+
+                                <tr class="table-light">
+                                    <th colspan="2">Envío / Uso</th>
+                                </tr>
+                                <tr>
+                                    <th>Enviado</th>
+                                    <td>
+                                        {% if voucher.sent %}
+                                        <span class="badge bg-success"><i class="fas fa-check-circle me-1"></i>Sí</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary"><i class="fas fa-times-circle me-1"></i>No</span>
+                                        {% endif %}
+                                        <span class="text-muted ms-2">{{ voucher.sent_date|date:"d/m/Y H:i"|default:"" }}</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>WhatsApp</th>
+                                    <td>
+                                        {% if voucher.sent_whatsapp %}
+                                        <span class="badge bg-success"><i class="fab fa-whatsapp me-1"></i>Sí</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary"><i class="fab fa-whatsapp me-1"></i>No</span>
+                                        {% endif %}
+                                        <span class="text-muted ms-2">{{ voucher.sent_whatsapp_date|date:"d/m/Y H:i"|default:"" }}</span>
+                                    </td>
+                                </tr>
+                                {% if voucher.status == 'used' and voucher.used_date %}
+                                <tr><th>Fecha de Uso</th><td>{{ voucher.used_date|date:"d/m/Y H:i" }}</td></tr>
+                                <tr><th>Usado por</th><td>{{ voucher.used_by|default:"No especificado" }}</td></tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Historial de Uso -->
+        {% if usage_logs %}
+        <div class="card border-0 shadow-sm mt-3" data-aos="fade-up" data-aos-delay="100">
+            <div class="card-header bg-secondary text-white">
+                <h3 class="h6 mb-0"><i class="fas fa-history me-2"></i>Historial de Actividad</h3>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover table-sm mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Acción</th>
+                                <th>Usuario</th>
+                                <th>Resultado</th>
+                                <th>Notas</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in usage_logs %}
+                            <tr>
+                                <td>{{ log.timestamp|date:"d/m/Y H:i" }}</td>
+                                <td>
+                                    {% if log.action == 'validate' %}
+                                    <span class="badge bg-info">Validación</span>
+                                    {% elif log.action == 'use' %}
+                                    <span class="badge bg-success">Uso</span>
+                                    {% elif log.action == 'void' %}
+                                    <span class="badge bg-danger">Anulación</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ log.user.username|default:"Sistema" }}</td>
+                                <td>
+                                    {% if log.result == 'success' %}
+                                    <span class="badge bg-success">Éxito</span>
+                                    {% else %}
+                                    <span class="badge bg-warning">{{ log.result }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ log.notes|default:"-" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

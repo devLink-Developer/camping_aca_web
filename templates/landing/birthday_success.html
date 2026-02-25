@@ -1,0 +1,118 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>¡Gracias por Registrarte! - Camping ACA Luján</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            /* Branding */
+            background: radial-gradient(900px 500px at 10% 10%, rgba(255, 198, 40, 0.28) 0%, rgba(255, 198, 40, 0) 60%),
+                        linear-gradient(135deg, #505c4e 0%, #2f3a2e 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .success-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            max-width: 600px;
+            margin: 20px;
+            text-align: center;
+            padding: 60px 40px;
+        }
+        .success-icon {
+            font-size: 6rem;
+            color: #ffc628;
+            animation: scaleIn 0.5s ease-out;
+        }
+        @keyframes scaleIn {
+            from { transform: scale(0); }
+            to { transform: scale(1); }
+        }
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #df1d2e;
+            animation: fall 3s linear infinite;
+        }
+        @keyframes fall {
+            to { transform: translateY(100vh) rotate(360deg); }
+        }
+
+        .brand-check {
+            color: #505c4e;
+        }
+    </style>
+</head>
+<body>
+    <div class="success-card">
+        <div class="success-icon mb-4">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        
+        <h1 class="display-5 fw-bold mb-3" style="color: #df1d2e;">¡Registro Exitoso!</h1>
+        
+        <p class="lead mb-4">
+            ¡Felicitaciones! Te has registrado correctamente.
+        </p>
+        
+        <div class="alert alert-success mb-4">
+            <h5><i class="fas fa-envelope me-2"></i>¿Qué sigue?</h5>
+            <p class="mb-0">
+                Te enviaremos <strong>ofertas especiales</strong> y novedades por email.
+                Además, cerca de tu cumpleaños, vas a recibir un <strong>regalo</strong>.
+            </p>
+        </div>
+        
+        <div class="bg-light p-4 rounded mb-4">
+            <h6 class="fw-bold mb-3">Tus beneficios incluyen:</h6>
+            <div class="row text-start">
+                <div class="col-md-6 mb-2">
+                    <i class="fas fa-check brand-check me-2"></i>
+                    Promociones exclusivas
+                </div>
+                <div class="col-md-6 mb-2">
+                    <i class="fas fa-check brand-check me-2"></i>
+                    Novedades del camping
+                </div>
+                <div class="col-md-6 mb-2">
+                    <i class="fas fa-check brand-check me-2"></i>
+                    Beneficios especiales
+                </div>
+                <div class="col-md-6 mb-2">
+                    <i class="fas fa-check brand-check me-2"></i>
+                    Regalo cerca de tu cumpleaños
+                </div>
+            </div>
+        </div>
+        
+        <div class="d-grid gap-2">
+            <a href="{% url 'landing:home' %}" class="btn btn-lg" style="background-color: #ffc628; color: #2a2a2a; font-weight: bold; border: 2px solid rgba(223, 29, 46, 0.65);">
+                <i class="fas fa-home me-2"></i>Volver al Sitio
+            </a>
+            
+            <a href="{% url 'landing:register_campaign' %}" class="btn btn-outline-secondary btn-lg">
+                <i class="fas fa-user-plus me-2"></i>Registrar a Otro Amigo
+            </a>
+        </div>
+        
+        <div class="mt-4">
+            <small class="text-muted">
+                <i class="fas fa-info-circle me-1"></i>
+                Si no recibes el email, revisa tu carpeta de spam o contáctanos.
+            </small>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+# Core Django
+Django==5.0.1
+djangorestframework==3.14.0
+django-environ==0.11.2
+
+# Database
+psycopg2-binary==2.9.9
+
+# Image handling
+Pillow==10.2.0
+
+# QR Code generation
+qrcode[pil]==7.4.2
+
+# Web server
+gunicorn==21.2.0
+whitenoise==6.6.0
+
+# Analytics and charting
+django-user-agents==0.4.0
+geoip2==4.7.0
+
+# Instagram integration
+instagrapi==2.0.0
+
+# Forms and validation
+django-crispy-forms==2.1
+crispy-bootstrap5==2024.2
+
+# Utilities
+python-dateutil==2.8.2
+pytz==2024.1

@@ -1,0 +1,475 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="{% block meta_description %}{{ site_config.tagline }} - Camping familiar en Luján{% endblock %}">
+    <title>{% block title %}{{ site_config.site_name }}{% endblock %}</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;700&family=Montserrat:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Swiper CSS for gallery -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <a class="skip-link" href="#mainContent">Saltar al contenido principal</a>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark shadow-sm" id="siteNavbar">
+        <div class="container">
+            {% url 'landing:home' as home_url %}
+            <a class="navbar-brand d-flex align-items-center" href="{% url 'landing:home' %}">
+                <span>CAMPING LUJÁN <span class="text-danger">ACA</span></span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Abrir menú">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    {% if user.is_authenticated and user.is_staff and not request.session.client_mode %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'dashboard:statistics' %}">
+                                <i class="fas fa-chart-line"></i> Estadísticas
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'dashboard:chatbot_statistics' %}">
+                                <i class="fas fa-robot"></i> Chatbot
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'dashboard:chatbot_clients' %}">
+                                <i class="fas fa-address-book"></i> Clientes
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'dashboard:messages' %}">
+                                <i class="fas fa-envelope"></i> Consultas
+                                {% if unread_contact_messages_count|default:0 %}
+                                    <span class="badge rounded-pill bg-warning text-dark ms-1">
+                                        {{ unread_contact_messages_count }}
+                                    </span>
+                                {% endif %}
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'dashboard:settings' %}">
+                                <i class="fas fa-cog"></i> Configuración
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'vouchers:list' %}">
+                                <i class="fas fa-ticket-alt"></i> Vouchers
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'landing:toggle_client_mode' %}?next={{ request.get_full_path|urlencode }}" title="Ver la web como cliente">
+                                <i class="fas fa-eye"></i> Ver web (cliente)
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'landing:salir' %}">
+                                <i class="fas fa-right-from-bracket"></i> Salir
+                            </a>
+                        </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% if request.path == home_url %}#top{% else %}{{ home_url }}{% endif %}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% if request.path == home_url %}#servicios{% else %}{{ home_url }}#servicios{% endif %}">Servicios</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% if request.path == home_url %}#galeria{% else %}{{ home_url }}#galeria{% endif %}">Galeria</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% if request.path == home_url %}#novedades{% else %}{{ home_url }}#novedades{% endif %}">Novedades</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% if request.path == home_url %}#faqs{% else %}{{ home_url }}#faqs{% endif %}">Preguntas frecuentes</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% if request.path == home_url %}#precios{% else %}{{ home_url }}#precios{% endif %}">Tarifas</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% if request.path == home_url %}#contacto{% else %}{{ home_url }}#contacto{% endif %}">Contacto</a>
+                    </li>
+
+                        {% if user.is_authenticated and user.is_staff and request.session.client_mode %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'landing:toggle_client_mode' %}?next={{ request.get_full_path|urlencode }}" title="Volver al modo admin">
+                                    <i class="fas fa-shield-halved"></i> Volver a admin
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'landing:salir' %}">
+                                    <i class="fas fa-right-from-bracket"></i> Salir
+                                </a>
+                            </li>
+                        {% elif user.is_authenticated %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'landing:salir' %}">
+                                    <i class="fas fa-right-from-bracket"></i> Salir
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'landing:acceso' %}" data-bs-toggle="modal" data-bs-target="#loginModal" onclick="event.preventDefault();">
+                                    <i class="fas fa-right-to-bracket"></i> Acceso
+                                </a>
+                            </li>
+                        {% endif %}
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    {% if messages %}
+    <div class="container mt-3">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if not user.is_authenticated %}
+    <!-- Modal Acceso -->
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header" style="background: linear-gradient(135deg, #505c4e 0%, #df1d2e 85%, #ffc628 140%);">
+                    <h5 class="modal-title text-white fw-bold" id="loginModalLabel">Acceso</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body p-3">
+                    <form method="post" action="{% url 'landing:acceso' %}" novalidate>
+                        {% csrf_token %}
+                        <input type="hidden" name="next" value="{{ request.get_full_path }}" />
+
+                        <div class="mb-2">
+                            <label class="form-label fw-bold small mb-1" for="login_username">Usuario</label>
+                            <input
+                                type="text"
+                                name="username"
+                                class="form-control form-control-sm"
+                                id="login_username"
+                                autocomplete="username"
+                                required
+                            />
+                        </div>
+
+                        <div class="mb-2">
+                            <label class="form-label fw-bold small mb-1" for="login_password">Contraseña</label>
+                            <input
+                                type="password"
+                                name="password"
+                                class="form-control form-control-sm"
+                                id="login_password"
+                                autocomplete="current-password"
+                                required
+                            />
+                        </div>
+
+                        <button type="submit" class="btn w-100 mt-3 py-2" style="background:#ffc628; color:#2a2a2a; font-weight:700; border:2px solid rgba(223,29,46,0.65);">
+                            <i class="fas fa-right-to-bracket me-2"></i>Ingresar
+                        </button>
+
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <a href="{% url 'landing:password_reset' %}" class="small" style="color:#505c4e; text-decoration: underline;">
+                                Recuperar contraseña
+                            </a>
+                            <a href="{% url 'landing:home' %}?register=1#registro" class="small" style="color:#df1d2e; text-decoration: underline;" id="openRegisterFromLogin">
+                                Registrarme
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main id="mainContent" tabindex="-1">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Scroll to Top Button -->
+    <button id="scrollToTop" title="Ir arriba">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 col-md-4 mb-4">
+                    <h5 class="fw-bold mb-3">CAMPING LUJÁN <span class="text-danger">ACA</span></h5>
+                    <p>{{ site_config.tagline }}</p>
+                    {% if site_config.opening_hours %}
+                    <p><i class="fas fa-clock me-2"></i>{{ site_config.opening_hours }}</p>
+                    {% endif %}
+                </div>
+                <div class="col-12 col-md-4 mb-4">
+                    <h5 class="fw-bold mb-3">Contacto</h5>
+                    {% if site_config.address %}
+                    <p><i class="fas fa-map-marker-alt me-2"></i>{{ site_config.address }}</p>
+                    {% endif %}
+                    {% if site_config.phone %}
+                    <p><i class="fas fa-phone me-2"></i>{{ site_config.phone }}</p>
+                    {% endif %}
+                    {% if site_config.email %}
+                    <p><i class="fas fa-envelope me-2"></i>{{ site_config.email }}</p>
+                    {% endif %}
+                </div>
+                <div class="col-12 col-md-4 mb-4">
+                    <h5 class="fw-bold mb-3">Síguenos</h5>
+                    <div class="social-links">
+                        {% if site_config.instagram_url %}
+                        <a href="{{ site_config.instagram_url }}" target="_blank" class="text-white me-3">
+                            <i class="fab fa-instagram fa-2x"></i>
+                        </a>
+                        {% endif %}
+                        {% if site_config.facebook_url %}
+                        <a href="{{ site_config.facebook_url }}" target="_blank" class="text-white">
+                            <i class="fab fa-facebook fa-2x"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <hr class="my-4 bg-white">
+            <div class="text-center">
+                <p class="mb-0">&copy; {% now "Y" %} {{ site_config.site_name }}. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Floating Buttons -->
+    {% if user.is_authenticated and user.is_staff and not request.session.client_mode %}
+        {# Modo admin: ocultar botones flotantes #}
+    {% else %}
+        <!-- Asociate Button -->
+        <a href="https://www.aca.org.ar/promociones/asociacion/0724/?id=3335383230373C333033313A3734373B32353C3A303A5367676166254964776B682069686C69" 
+           class="btn-asociate" target="_blank">
+            <i class="fas fa-id-card"></i>
+            <span>Asociate</span>
+        </a>
+
+        <!-- WhatsApp Button -->
+        {% if site_config.phone %}
+        <a href="https://wa.me/{{ site_config.phone|cut:' '|cut:'-'|cut:'+'|cut:'(' |cut:')' }}" 
+           class="btn-whatsapp" target="_blank" title="Contactar por WhatsApp">
+            <i class="fab fa-whatsapp"></i>
+        </a>
+        {% endif %}
+    {% endif %}
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Swiper JS -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    
+    <!-- Analytics tracking script -->
+    {% include 'includes/analytics_script.html' %}
+    
+    <!-- Navbar Auto-hide and Scroll to Top -->
+    <script>
+        // Mantener el contenido separado del navbar fijo.
+        // El navbar cambia de altura según breakpoint y si el menú colapsable está abierto.
+        const updateNavbarHeightVar = () => {
+            const nav = document.getElementById('siteNavbar');
+            if (!nav) return;
+            const height = nav.getBoundingClientRect().height;
+            document.documentElement.style.setProperty('--navbar-height', `${Math.ceil(height)}px`);
+        };
+
+
+        window.addEventListener('load', updateNavbarHeightVar);
+        window.addEventListener('resize', updateNavbarHeightVar);
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateNavbarHeightVar();
+
+            // Recalcular cuando se abre/cierra el menú mobile (Bootstrap Collapse)
+            const navbarCollapse = document.getElementById('navbarNav');
+            if (navbarCollapse) {
+                navbarCollapse.addEventListener('shown.bs.collapse', updateNavbarHeightVar);
+                navbarCollapse.addEventListener('hidden.bs.collapse', updateNavbarHeightVar);
+            }
+        });
+
+        // En mobile: cerrar el menú al hacer click en un link (mejora UX, sin cambiar rutas)
+        document.addEventListener('DOMContentLoaded', () => {
+            const navbarCollapseEl = document.getElementById('navbarNav');
+            if (!navbarCollapseEl || !window.bootstrap) return;
+
+            const bsCollapse = bootstrap.Collapse.getOrCreateInstance(navbarCollapseEl, { toggle: false });
+            document.querySelectorAll('#navbarNav .nav-link').forEach((link) => {
+                link.addEventListener('click', () => {
+                    if (navbarCollapseEl.classList.contains('show')) {
+                        bsCollapse.hide();
+                    }
+                });
+            });
+        });
+
+        // Resaltar sección activa en el navbar (solo links con href="#...")
+        document.addEventListener('DOMContentLoaded', () => {
+            const navLinks = Array.from(document.querySelectorAll('#navbarNav .nav-link[href^="#"]'));
+            if (!navLinks.length) return;
+
+            const sections = navLinks
+                .map((link) => document.querySelector(link.getAttribute('href')))
+                .filter(Boolean);
+
+            if (!sections.length) return;
+
+            const setActive = (sectionId) => {
+                navLinks.forEach((link) => {
+                    const isActive = link.getAttribute('href') === `#${sectionId}`;
+                    link.classList.toggle('active', isActive);
+                    if (isActive) {
+                        link.setAttribute('aria-current', 'page');
+                    } else {
+                        link.removeAttribute('aria-current');
+                    }
+                });
+            };
+
+            const detectActiveSection = () => {
+                const y = window.innerHeight * 0.25;
+                let current = null;
+                sections.forEach((section) => {
+                    const rect = section.getBoundingClientRect();
+                    if (rect.top <= y && rect.bottom >= y) {
+                        current = section.id;
+                    }
+                });
+                if (current) setActive(current);
+            };
+
+            window.addEventListener('scroll', detectActiveSection, { passive: true });
+            window.addEventListener('hashchange', detectActiveSection);
+            detectActiveSection();
+        });
+
+        // Abrir modal de acceso si viene con ?login=1
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('login') === '1') {
+                const modalEl = document.getElementById('loginModal');
+                if (modalEl && window.bootstrap) {
+                    const modal = new bootstrap.Modal(modalEl);
+                    modal.show();
+                }
+            }
+        });
+
+        // Desde el modal de acceso: "Registrarme" debe abrir el modal de registro si existe.
+        // Si no existe (por ejemplo en subpáginas), redirige a Home con ?register=1#registro.
+        document.addEventListener('DOMContentLoaded', () => {
+            const link = document.getElementById('openRegisterFromLogin');
+            if (!link) return;
+
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+
+                const registerModalEl = document.getElementById('registerModal');
+                const loginModalEl = document.getElementById('loginModal');
+
+                const openRegister = () => {
+                    if (registerModalEl && window.bootstrap) {
+                        const registerModal = bootstrap.Modal.getOrCreateInstance(registerModalEl);
+                        registerModal.show();
+                        document.getElementById('registro')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        return;
+                    }
+                    window.location.href = link.getAttribute('href') || '{% url "landing:home" %}?register=1#registro';
+                };
+
+                if (loginModalEl && window.bootstrap) {
+                    const loginModal = bootstrap.Modal.getOrCreateInstance(loginModalEl);
+                    loginModal.hide();
+                    // Esperar a que el modal cierre para evitar glitches.
+                    loginModalEl.addEventListener('hidden.bs.modal', openRegister, { once: true });
+                    return;
+                }
+
+                openRegister();
+            });
+        });
+
+        // Auto-hide navbar on scroll (DESHABILITADO para evitar conflictos)
+        let lastScroll = 0;
+        const navbar = document.querySelector('.navbar');
+        const scrollToTopBtn = document.getElementById('scrollToTop');
+        
+        window.addEventListener('scroll', () => {
+            const currentScroll = window.pageYOffset;
+            
+            // Navbar auto-hide DESHABILITADO
+            /*
+            if (currentScroll <= 0) {
+                navbar.classList.remove('navbar-hidden');
+                navbar.classList.remove('scrolled');
+            } else if (currentScroll > lastScroll && currentScroll > 100) {
+                // Scrolling down
+                navbar.classList.add('navbar-hidden');
+                navbar.classList.add('scrolled');
+            } else if (currentScroll < lastScroll) {
+                // Scrolling up
+                navbar.classList.remove('navbar-hidden');
+                navbar.classList.add('navbar-visible');
+                navbar.classList.add('scrolled');
+            }
+            */
+            
+            // Añadir clase scrolled para efecto visual
+            if (currentScroll > 100) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+            
+            lastScroll = currentScroll;
+            
+            // Show/hide scroll to top button
+            if (currentScroll > 300) {
+                scrollToTopBtn.classList.add('show');
+            } else {
+                scrollToTopBtn.classList.remove('show');
+            }
+        });
+        
+        // Scroll to top functionality
+        scrollToTopBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

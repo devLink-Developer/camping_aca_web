@@ -1,0 +1,765 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Hero Section -->
+<section id="top" class="hero-section" style="background-image: url('{% if site_config.hero_image %}{{ site_config.hero_image.url }}{% else %}{% static 'images/hero-default.jpg' %}{% endif %}');">
+    <div class="hero-overlay">
+        <div class="container">
+            <div class="hero-content text-center text-white">
+                <h1 class="hero-title mb-3" data-aos="fade-up">
+                    <span class="text-white">CAMPING Luján</span>
+                    <span class="text-danger">ACA</span>
+                </h1>
+                <p class="hero-subtitle mb-4" data-aos="fade-up" data-aos-delay="100">
+                    {{ site_config.tagline|default:"Un lugar para vos" }}
+                </p>
+
+                <div class="d-flex flex-column flex-sm-row justify-content-center gap-2" data-aos="fade-up" data-aos-delay="150">
+                    <a href="#servicios" class="btn btn-warning px-4 py-2 fw-bold">
+                        <i class="fas fa-compass me-2" aria-hidden="true"></i>Ver servicios
+                    </a>
+                    <a href="#contacto" class="btn btn-primary px-4 py-2 fw-bold">
+                        <i class="fas fa-paper-plane me-2" aria-hidden="true"></i>Consultar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Marketing / Registro -->
+<section id="registro" class="py-5" style="background: linear-gradient(135deg, rgba(80,92,78,0.08) 0%, rgba(255,198,40,0.12) 100%);">
+    <div class="container">
+        <div class="row align-items-center g-4">
+            <div class="col-lg-6" data-aos="fade-right">
+                <h2 class="display-6 fw-bold mb-3">
+                    Registrate!!! Recibí <span style="color:#df1d2e;">regalos</span> y
+                    <span style="color:#505c4e;">ofertas especiales</span>
+                </h2>
+                <p class="lead mb-3">
+                    Creá tu usuario con tu email y accedé a beneficios exclusivos para registrados.
+                </p>
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2"><i class="fas fa-check-circle me-2" style="color:#505c4e;"></i>Promociones y novedades por email</li>
+                    <li class="mb-2"><i class="fas fa-check-circle me-2" style="color:#505c4e;"></i>Beneficios especiales</li>
+                    <li class="mb-2"><i class="fas fa-check-circle me-2" style="color:#505c4e;"></i>Regalo cerca de tu cumpleaños</li>
+                </ul>
+            </div>
+
+            <div class="col-lg-6" data-aos="fade-left">
+                <div class="p-4 bg-white rounded-3 shadow-sm" style="border-left: 6px solid #df1d2e;">
+                    <h3 class="h4 fw-bold mb-2" style="color:#df1d2e;">Sumate en 1 minuto</h3>
+                    <p class="text-muted mb-3">Registrate para recibir regalos y ofertas especiales.</p>
+
+                    <button type="button" class="btn w-100 py-3" data-bs-toggle="modal" data-bs-target="#registerModal" style="background:#ffc628; color:#2a2a2a; font-weight:700; border:2px solid rgba(223,29,46,0.65);">
+                        <i class="fas fa-user-check me-2"></i>Registrarme
+                    </button>
+
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <a href="{% url 'landing:password_reset' %}" class="small" style="color:#505c4e; text-decoration: underline;">
+                            Recuperar contraseña
+                        </a>
+                        <a href="{% url 'landing:acceso' %}" class="small" style="color:#df1d2e; text-decoration: underline;" data-bs-toggle="modal" data-bs-target="#loginModal" onclick="event.preventDefault();">
+                            Ya tengo cuenta
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Modal Registro -->
+<div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #505c4e 0%, #df1d2e 85%, #ffc628 140%);">
+                <h5 class="modal-title text-white fw-bold" id="registerModalLabel">
+                    Crear cuenta
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body p-3">
+                <p class="text-muted mb-2 small">Tu email será tu usuario.</p>
+
+                {% if registration_form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {{ registration_form.non_field_errors }}
+                    </div>
+                {% endif %}
+
+                <form method="post" action="{% url 'landing:home' %}#registro" novalidate>
+                    {% csrf_token %}
+                    <input type="hidden" name="form_name" value="register">
+
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small mb-1">{{ registration_form.first_name.label }} <span class="text-danger">*</span></label>
+                            {{ registration_form.first_name }}
+                            {% if registration_form.first_name.errors %}
+                                <div class="text-danger small">{{ registration_form.first_name.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small mb-1">{{ registration_form.last_name.label }} <span class="text-danger">*</span></label>
+                            {{ registration_form.last_name }}
+                            {% if registration_form.last_name.errors %}
+                                <div class="text-danger small">{{ registration_form.last_name.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-bold small mb-1">{{ registration_form.email.label }} <span class="text-danger">*</span></label>
+                            {{ registration_form.email }}
+                            <div class="form-text small">Este email será tu usuario.</div>
+                            {% if registration_form.email.errors %}
+                                <div class="text-danger small">{{ registration_form.email.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-bold small mb-1">{{ registration_form.birth_date.label }} <span class="text-danger">*</span></label>
+                            {{ registration_form.birth_date }}
+                            {% if registration_form.birth_date.errors %}
+                                <div class="text-danger small">{{ registration_form.birth_date.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small mb-1">{{ registration_form.dni.label }}</label>
+                            {{ registration_form.dni }}
+                            {% if registration_form.dni.errors %}
+                                <div class="text-danger small">{{ registration_form.dni.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small mb-1">{{ registration_form.phone.label }}</label>
+                            {{ registration_form.phone }}
+                            {% if registration_form.phone.errors %}
+                                <div class="text-danger small">{{ registration_form.phone.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small mb-1">{{ registration_form.password1.label }} <span class="text-danger">*</span></label>
+                            {{ registration_form.password1 }}
+                            {% if registration_form.password1.errors %}
+                                <div class="text-danger small">{{ registration_form.password1.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small mb-1">{{ registration_form.password2.label }} <span class="text-danger">*</span></label>
+                            {{ registration_form.password2 }}
+                            {% if registration_form.password2.errors %}
+                                <div class="text-danger small">{{ registration_form.password2.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn w-100 mt-3 py-2" style="background:#ffc628; color:#2a2a2a; font-weight:700; border:2px solid rgba(223,29,46,0.65);">
+                        <i class="fas fa-user-check me-2"></i>Crear cuenta
+                    </button>
+
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <a href="{% url 'landing:password_reset' %}" class="small" style="color:#505c4e; text-decoration: underline;">
+                            ¿Olvidaste tu contraseña?
+                        </a>
+                        <a href="{% url 'landing:acceso' %}" class="small" style="color:#df1d2e; text-decoration: underline;" data-bs-toggle="modal" data-bs-target="#loginModal" data-bs-dismiss="modal" onclick="event.preventDefault();">
+                            Ya tengo cuenta
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Alert Section -->
+{% if site_config.is_alert_active and site_config.special_alert %}
+<div class="container my-3">
+    <div class="site-alert" role="alert" aria-live="polite">
+        <div class="site-alert__inner">
+            <span class="site-alert__icon" aria-hidden="true">
+                <i class="fas fa-triangle-exclamation"></i>
+            </span>
+            <span class="site-alert__text">{{ site_config.special_alert }}</span>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Services Section -->
+<section id="servicios" class="py-5 bg-light">
+    <div class="container">
+        <h2 class="text-center mb-5 display-5 fw-bold" data-aos="fade-up">Servicios</h2>
+        <p class="text-center text-muted lead mb-4 service-section-subtitle" data-aos="fade-up" data-aos-delay="100">
+            Todo lo que necesitás para vivir una jornada completa: más comodidad, más naturaleza y más diversión en familia.
+        </p>
+        <div class="row g-4">
+            {% for service in services %}
+            <div class="col-12 col-sm-6 col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:0|stringformat:'d' }}00">
+                <div class="service-card service-card--marketing h-100 p-4 bg-white rounded-3 shadow-sm">
+                    <span class="service-badge">Experiencia destacada</span>
+                    {% if service.icon %}
+                    <div class="text-center mb-3 service-icon-wrap">
+                        <img src="{{ service.icon.url }}" alt="{{ service.title }}" class="service-icon" style="max-width: 80px;">
+                    </div>
+                    {% elif service.icon_fa %}
+                    <div class="text-center mb-3 service-icon-wrap">
+                        <i class="fas {{ service.icon_fa }} fa-3x text-danger"></i>
+                    </div>
+                    {% endif %}
+                    <h3 class="h5 fw-bold mb-3 service-title">{{ service.title }}</h3>
+                    <p class="text-muted service-description">{{ service.description }}</p>
+                    {% if service.features %}
+                    <ul class="list-unstyled service-features">
+                        {% for feature in service.features %}
+                        <li><i class="fas fa-check-circle me-2"></i>{{ feature }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+
+                    <a href="#contacto" class="btn service-cta mt-auto">
+                        <i class="fas fa-paper-plane me-2"></i>Quiero este servicio
+                    </a>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center">
+                <p class="text-muted">No hay servicios disponibles en este momento.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Gallery Section -->
+<section id="galeria" class="py-5">
+    <div class="container">
+        <h2 class="text-center mb-5 display-5 fw-bold" data-aos="fade-up">Galería</h2>
+        
+        {% if gallery_images %}
+        <div class="swiper gallerySwiper" data-aos="zoom-in">
+            <div class="swiper-wrapper">
+                {% for image in gallery_images %}
+                <div class="swiper-slide">
+                    <div class="gallery-item">
+                        <img src="{{ image.image.url }}" alt="{{ image.alt_text }}" class="gallery-image" loading="lazy" decoding="async">
+                        <div class="gallery-caption">
+                            <h5 class="gallery-title">{{ image.title }}</h5>
+                            {% if image.description %}
+                            <p class="gallery-description">{{ image.description }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="swiper-button-next"></div>
+            <div class="swiper-button-prev"></div>
+            <div class="swiper-pagination"></div>
+        </div>
+
+        <!-- Lightbox / Zoom -->
+        <div class="gallery-lightbox" id="galleryLightbox" aria-hidden="true">
+            <button type="button" class="gallery-lightbox__close" id="galleryLightboxClose" aria-label="Cerrar">
+                <i class="fas fa-times" aria-hidden="true"></i>
+            </button>
+            <div class="gallery-lightbox__stage" id="galleryLightboxStage" role="dialog" aria-modal="true" aria-label="Vista ampliada de la imagen">
+                <img id="galleryLightboxImg" class="gallery-lightbox__img" alt="">
+            </div>
+        </div>
+        {% else %}
+        <p class="text-center text-muted">No hay imágenes en la galería.</p>
+        {% endif %}
+    </div>
+</section>
+
+<!-- News Section / Novedades -->
+<section id="novedades" class="py-5 bg-white">
+    <div class="container">
+        <h2 class="text-center mb-4 display-5 fw-bold" data-aos="fade-up">Novedades</h2>
+        <hr class="mb-5" style="height: 3px; background-color: #df1d2e; opacity: 1; width: 100px; margin: 0 auto;">
+        
+        {% if news_list %}
+            {% for news in news_list %}
+            <!-- Novedad {{ forloop.counter }}: {{ news.title }} -->
+            <div class="row align-items-center {% if not forloop.last %}mb-5{% endif %} py-4" data-aos="fade-up">
+                {% if forloop.counter|divisibleby:2 %}
+                <!-- Imagen a la derecha para pares -->
+                <div class="col-md-7 order-2 order-md-1">
+                    <h3 class="mb-3 fw-bold" style="color: #df1d2e;">{{ news.title }}</h3>
+                    <div class="news-description">{{ news.description|linebreaks }}</div>
+                </div>
+                <div class="col-md-5 mb-4 mb-md-0 order-1 order-md-2">
+                    {% with imgs=news.images.all %}
+                    {% if imgs|length > 1 %}
+                        <div id="newsCarousel{{ news.id }}" class="carousel slide shadow rounded" data-bs-ride="carousel">
+                            <div class="carousel-inner rounded">
+                                {% for img in imgs %}
+                                    <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                                        <img src="{{ img.image.url }}" alt="{{ news.title }}" class="d-block w-100" style="height: auto;" loading="{% if forloop.first %}eager{% else %}lazy{% endif %}" decoding="async">
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <button class="carousel-control-prev" type="button" data-bs-target="#newsCarousel{{ news.id }}" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Anterior</span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#newsCarousel{{ news.id }}" data-bs-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Siguiente</span>
+                            </button>
+                        </div>
+                    {% else %}
+                            <img src="{{ news.image.url }}" 
+                                alt="{{ news.title }}" 
+                             class="img-fluid rounded shadow"
+                                style="width: 100%; height: auto;" loading="lazy" decoding="async">
+                    {% endif %}
+                    {% endwith %}
+                </div>
+                {% else %}
+                <!-- Imagen a la izquierda para impares -->
+                <div class="col-md-5 mb-4 mb-md-0">
+                    {% with imgs=news.images.all %}
+                    {% if imgs|length > 1 %}
+                        <div id="newsCarousel{{ news.id }}" class="carousel slide shadow rounded" data-bs-ride="carousel">
+                            <div class="carousel-inner rounded">
+                                {% for img in imgs %}
+                                    <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                                        <img src="{{ img.image.url }}" alt="{{ news.title }}" class="d-block w-100" style="height: auto;" loading="{% if forloop.first %}eager{% else %}lazy{% endif %}" decoding="async">
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <button class="carousel-control-prev" type="button" data-bs-target="#newsCarousel{{ news.id }}" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Anterior</span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#newsCarousel{{ news.id }}" data-bs-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Siguiente</span>
+                            </button>
+                        </div>
+                    {% else %}
+                            <img src="{{ news.image.url }}" 
+                                alt="{{ news.title }}" 
+                             class="img-fluid rounded shadow"
+                                style="width: 100%; height: auto;" loading="lazy" decoding="async">
+                    {% endif %}
+                    {% endwith %}
+                </div>
+                <div class="col-md-7">
+                    <h3 class="mb-3 fw-bold" style="color: #df1d2e;">{{ news.title }}</h3>
+                    <div class="news-description">{{ news.description|linebreaks }}</div>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        {% else %}
+        <p class="text-center text-muted py-5">No hay novedades disponibles en este momento.</p>
+        {% endif %}
+    </div>
+</section>
+
+<!-- FAQ Section -->
+<section id="faqs" class="py-5 bg-light">
+    <div class="container">
+        <h2 class="text-center mb-5 display-5 fw-bold" data-aos="fade-up">Preguntas Frecuentes</h2>
+        
+        {% if faqs %}
+        <div class="accordion" id="faqAccordion">
+            {% for faq in faqs %}
+            <div class="accordion-item" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:0|stringformat:'d' }}00">
+                <h3 class="accordion-header" id="heading{{ forloop.counter }}">
+                    <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" type="button" 
+                            data-bs-toggle="collapse" data-bs-target="#collapse{{ forloop.counter }}">
+                        {{ faq.question }}
+                    </button>
+                </h3>
+                <div id="collapse{{ forloop.counter }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" 
+                     data-bs-parent="#faqAccordion">
+                    <div class="accordion-body">
+                        {{ faq.answer|linebreaks }}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Prices Section -->
+<section id="precios" class="py-5">
+    <div class="container">
+        <h2 class="text-center mb-5 display-5 fw-bold" data-aos="fade-up">Nuestras Tarifas</h2>
+        
+        <div class="row g-4">
+            {% for category in price_categories %}
+            <div class="col-md-6" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:0|stringformat:'d' }}00">
+                <div class="price-card h-100 p-4 bg-white rounded-3 shadow">
+                    <h3 class="text-center mb-4 py-2 bg-dark text-white rounded">{{ category.name }}</h3>
+                    {% for price in category.prices.all %}
+                    {% if price.is_active %}
+                    <div class="price-item mb-3">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h5 class="fw-bold mb-1">{{ price.item_name }}</h5>
+                                {% if price.description %}
+                                <p class="text-muted small mb-0">{{ price.description }}</p>
+                                {% endif %}
+                            </div>
+                            <div class="text-end">
+                                {% if price.is_free %}
+                                <span class="badge bg-success fs-6">GRATIS</span>
+                                {% else %}
+                                <span class="fw-bold fs-5">${{ price.amount|floatformat:2 }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials Section -->
+{% if testimonials %}
+<section id="testimonios" class="py-5 bg-light">
+    <div class="container">
+        <h2 class="text-center mb-5 display-5 fw-bold" data-aos="fade-up">Lo que dicen nuestros visitantes</h2>
+        
+        <div class="row g-4">
+            {% for testimonial in testimonials %}
+            <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:0|stringformat:'d' }}00">
+                <div class="testimonial-card h-100 p-4 bg-white rounded-3 shadow-sm">
+                    <div class="mb-3">
+                        {% for i in "12345" %}
+                        {% if forloop.counter <= testimonial.rating %}
+                        <i class="fas fa-star text-warning"></i>
+                        {% else %}
+                        <i class="far fa-star text-warning"></i>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                    <p class="mb-3">"{{ testimonial.text }}"</p>
+                    <div class="d-flex align-items-center">
+                        {% if testimonial.photo %}
+                        <img src="{{ testimonial.photo.url }}" alt="{{ testimonial.name }}" class="rounded-circle me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                        {% endif %}
+                        <strong>{{ testimonial.name }}</strong>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Contact Section -->
+<section id="contacto" class="py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 mb-4 mb-lg-0" data-aos="fade-right">
+                <h2 class="display-5 fw-bold mb-4">¡Personaliza tu Experiencia en Grupo!</h2>
+                <p class="lead">Estamos preparando experiencias únicas para grupos familiares, festejos, campamentos grupales y clubes de autos.</p>
+                <p>Por favor, completa el formulario con la información de tu grupo y en breve te enviaremos una cotización personalizada.</p>
+            </div>
+            <div class="col-lg-6" data-aos="fade-left">
+                <div class="contact-form-wrapper p-4 bg-light rounded-3">
+                    <form method="post" action="{% url 'landing:home' %}#contacto">
+                        {% csrf_token %}
+                        <input type="hidden" name="form_name" value="contact">
+                        <div class="mb-3">
+                            <label for="contact_full_name" class="form-label fw-bold small mb-1">Nombre y apellido</label>
+                            <input type="text" id="contact_full_name" name="full_name" class="form-control" placeholder="Nombre completo" autocomplete="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="contact_email" class="form-label fw-bold small mb-1">Email</label>
+                            <input type="email" id="contact_email" name="email" class="form-control" placeholder="tu@email.com" autocomplete="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="contact_phone" class="form-label fw-bold small mb-1">Teléfono</label>
+                            <input type="tel" id="contact_phone" name="phone" class="form-control" placeholder="Ej: 11 1234 5678" inputmode="tel" autocomplete="tel" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="contact_message" class="form-label fw-bold small mb-1">Mensaje</label>
+                            <textarea id="contact_message" name="message" class="form-control" rows="5" placeholder="Contanos cuántos son, fecha aproximada y qué tipo de evento." required></textarea>
+                            <div class="form-text">Te respondemos a la brevedad.</div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 py-3" aria-label="Enviar consulta">Enviar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<!-- AOS Animation -->
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
+<script>
+// Initialize AOS
+AOS.init({
+    duration: 800,
+    once: true,
+});
+
+// Initialize Swiper
+const swiper = new Swiper('.gallerySwiper', {
+    slidesPerView: 1,
+    spaceBetween: 16,
+    loop: true,
+    autoplay: {
+        delay: 5000,
+        disableOnInteraction: false,
+    },
+    pagination: {
+        el: '.swiper-pagination',
+        clickable: true,
+    },
+    navigation: {
+        nextEl: '.swiper-button-next',
+        prevEl: '.swiper-button-prev',
+    },
+    breakpoints: {
+        768: {
+            slidesPerView: 2,
+            spaceBetween: 24,
+        },
+        1200: {
+            slidesPerView: 2,
+            spaceBetween: 28,
+        }
+    },
+});
+
+// Gallery lightbox + zoom
+(() => {
+    const lightbox = document.getElementById('galleryLightbox');
+    const stage = document.getElementById('galleryLightboxStage');
+    const img = document.getElementById('galleryLightboxImg');
+    const closeBtn = document.getElementById('galleryLightboxClose');
+    const swiperEl = document.querySelector('.gallerySwiper');
+
+    if (!lightbox || !stage || !img || !closeBtn || !swiperEl) return;
+
+    let scale = 1;
+    let translateX = 0;
+    let translateY = 0;
+    let isPanning = false;
+    let panStartX = 0;
+    let panStartY = 0;
+    let pointerStartX = 0;
+    let pointerStartY = 0;
+    let lastTouchTime = 0;
+
+    const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+    const applyTransform = () => {
+        img.style.transition = isPanning ? 'none' : '';
+        img.style.transform = `translate3d(${translateX}px, ${translateY}px, 0) scale(${scale})`;
+        img.style.cursor = scale > 1 ? (isPanning ? 'grabbing' : 'grab') : 'zoom-in';
+    };
+
+    const resetTransform = () => {
+        scale = 1;
+        translateX = 0;
+        translateY = 0;
+        applyTransform();
+    };
+
+    const open = (src, alt) => {
+        img.src = src;
+        img.alt = alt || '';
+        resetTransform();
+        lightbox.classList.add('is-open');
+        lightbox.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('gallery-lightbox-open');
+    };
+
+    const close = () => {
+        lightbox.classList.remove('is-open');
+        lightbox.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('gallery-lightbox-open');
+        // limpiar el src para evitar mostrar flash de la imagen anterior
+        window.setTimeout(() => {
+            if (!lightbox.classList.contains('is-open')) {
+                img.removeAttribute('src');
+                img.alt = '';
+            }
+        }, 120);
+    };
+
+    const toggleZoom = () => {
+        if (scale === 1) {
+            scale = 2.2;
+        } else {
+            scale = 1;
+            translateX = 0;
+            translateY = 0;
+        }
+        applyTransform();
+    };
+
+    swiperEl.addEventListener('click', (e) => {
+        if (typeof swiper !== 'undefined' && swiper && swiper.allowClick === false) return;
+        const target = e.target;
+        if (!(target instanceof Element)) return;
+        const card = target.closest('.gallery-item');
+        if (!card) return;
+        const imageEl = card.querySelector('img.gallery-image');
+        if (!imageEl) return;
+        open(imageEl.currentSrc || imageEl.src, imageEl.alt);
+    });
+
+    closeBtn.addEventListener('click', close);
+    lightbox.addEventListener('click', (e) => {
+        if (e.target === lightbox) close();
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (!lightbox.classList.contains('is-open')) return;
+        if (e.key === 'Escape') close();
+    });
+
+    // Wheel zoom (desktop)
+    stage.addEventListener('wheel', (e) => {
+        if (!lightbox.classList.contains('is-open')) return;
+        e.preventDefault();
+        const delta = Math.sign(e.deltaY);
+        const next = clamp(scale + (delta > 0 ? -0.15 : 0.15), 1, 4);
+        // si vuelve a 1, reset para evitar que quede desplazada
+        if (next === 1) {
+            scale = 1;
+            translateX = 0;
+            translateY = 0;
+        } else {
+            scale = next;
+        }
+        applyTransform();
+    }, { passive: false });
+
+    // Double click / double tap to toggle zoom
+    stage.addEventListener('dblclick', (e) => {
+        if (!lightbox.classList.contains('is-open')) return;
+        e.preventDefault();
+        toggleZoom();
+    });
+
+    stage.addEventListener('touchend', () => {
+        if (!lightbox.classList.contains('is-open')) return;
+        const now = Date.now();
+        if (now - lastTouchTime < 260) {
+            toggleZoom();
+            lastTouchTime = 0;
+            return;
+        }
+        lastTouchTime = now;
+    }, { passive: true });
+
+    const onPointerDown = (clientX, clientY) => {
+        if (scale <= 1) return;
+        isPanning = true;
+        panStartX = translateX;
+        panStartY = translateY;
+        pointerStartX = clientX;
+        pointerStartY = clientY;
+        applyTransform();
+    };
+
+    const onPointerMove = (clientX, clientY) => {
+        if (!isPanning) return;
+        translateX = panStartX + (clientX - pointerStartX);
+        translateY = panStartY + (clientY - pointerStartY);
+        applyTransform();
+    };
+
+    const onPointerUp = () => {
+        if (!isPanning) return;
+        isPanning = false;
+        applyTransform();
+    };
+
+    stage.addEventListener('mousedown', (e) => {
+        if (!lightbox.classList.contains('is-open')) return;
+        e.preventDefault();
+        onPointerDown(e.clientX, e.clientY);
+    });
+    window.addEventListener('mousemove', (e) => {
+        if (!lightbox.classList.contains('is-open')) return;
+        onPointerMove(e.clientX, e.clientY);
+    });
+    window.addEventListener('mouseup', () => {
+        if (!lightbox.classList.contains('is-open')) return;
+        onPointerUp();
+    });
+
+    stage.addEventListener('touchstart', (e) => {
+        if (!lightbox.classList.contains('is-open')) return;
+        if (e.touches.length !== 1) return;
+        const t = e.touches[0];
+        onPointerDown(t.clientX, t.clientY);
+    }, { passive: true });
+
+    stage.addEventListener('touchmove', (e) => {
+        if (!lightbox.classList.contains('is-open')) return;
+        if (e.touches.length !== 1) return;
+        const t = e.touches[0];
+        onPointerMove(t.clientX, t.clientY);
+    }, { passive: true });
+
+    stage.addEventListener('touchend', onPointerUp, { passive: true });
+})();
+
+// Smooth scroll
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        const href = this.getAttribute('href');
+        if (!href || href === '#') return;
+        const target = document.querySelector(href);
+        if (!target) return;
+
+        e.preventDefault();
+        const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        target.scrollIntoView({
+            behavior: prefersReducedMotion ? 'auto' : 'smooth',
+            block: 'start'
+        });
+    });
+});
+
+// Si hubo errores en el registro, abrir el modal automáticamente
+document.addEventListener('DOMContentLoaded', () => {
+    const hasRegisterErrors = {{ registration_form.errors|yesno:"true,false" }};
+    const hasRegisterNonFieldErrors = {{ registration_form.non_field_errors|yesno:"true,false" }};
+
+    const params = new URLSearchParams(window.location.search);
+    const shouldOpenRegister = params.get('register') === '1';
+
+    if (hasRegisterErrors || hasRegisterNonFieldErrors || shouldOpenRegister) {
+        const modalEl = document.getElementById('registerModal');
+        if (modalEl && window.bootstrap) {
+            const modal = new bootstrap.Modal(modalEl);
+            modal.show();
+
+            if (shouldOpenRegister) {
+                params.delete('register');
+                const nextUrl = `${window.location.pathname}${params.toString() ? '?' + params.toString() : ''}${window.location.hash}`;
+                window.history.replaceState({}, '', nextUrl);
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

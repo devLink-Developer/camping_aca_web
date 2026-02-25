@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Mensajes — {{ phone }}{% endblock %}
+
+{% block content %}
+
+{# ══ HERO ══════════════════════════════════════════════════════════════════ #}
+<section class="py-3" style="background-color:#df1d2e;">
+  <div class="container">
+    <div class="d-flex align-items-center gap-3 flex-wrap">
+      <a href="{% url 'dashboard:chatbot_clients' %}" class="btn btn-outline-light btn-sm">
+        <i class="fas fa-arrow-left me-1"></i>Clientes
+      </a>
+      <div>
+        <h1 class="h4 fw-bold text-white mb-0">
+          <i class="fab fa-whatsapp me-2"></i>{{ phone }}
+          {% if client and client.1 %}<span class="fw-normal opacity-75"> · {{ client.1 }}</span>{% endif %}
+        </h1>
+        <p class="mb-0 text-white-50 small">
+          DB Devlink{% if db_port_used %} · puerto {{ db_port_used }}{% endif %}
+          · {{ pagination.total }} mensaje{{ pagination.total|pluralize }}
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="py-4" style="background:#f4f5f7; min-height:70vh;">
+  <div class="container" style="max-width:760px;">
+
+    {# ── Error ── #}
+    {% if devlink_error %}
+      <div class="alert alert-danger d-flex align-items-center gap-2">
+        <i class="fas fa-triangle-exclamation fa-lg"></i>
+        <div>{{ devlink_error }}</div>
+      </div>
+    {% endif %}
+
+    {# ── Paginación superior ── #}
+    {% if pagination.total_pages > 1 %}
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <span class="small text-muted">
+        Página {{ pagination.page }} / {{ pagination.total_pages }} &nbsp;·&nbsp; {{ pagination.total }} mensajes
+      </span>
+      {% include "dashboard/_msg_pagination.html" %}
+    </div>
+    {% endif %}
+
+    {# ── Listado de mensajes ── #}
+    {% if messages_rows %}
+      <div class="d-flex flex-column gap-2">
+        {% for m in messages_rows %}
+          {# m: id, tipo, contenido, ts, delivery_status #}
+          <div class="d-flex {% if m.1 == 'in' %}justify-content-start{% else %}justify-content-end{% endif %}">
+            <div class="p-3 rounded-3 shadow-sm"
+                 style="max-width:75%;
+                        background:{% if m.1 == 'in' %}#ffffff{% else %}#dcf8c6{% endif %};
+                        border: 1px solid {% if m.1 == 'in' %}#dee2e6{% else %}#b2dfb0{% endif %};">
+
+              {# Etiqueta de dirección #}
+              <div class="d-flex align-items-center gap-2 mb-1">
+                {% if m.1 == 'in' %}
+                  <span class="badge rounded-pill" style="background:#df1d2e; font-size:.65rem;">
+                    <i class="fas fa-arrow-down me-1"></i>Cliente
+                  </span>
+                {% else %}
+                  <span class="badge rounded-pill bg-success" style="font-size:.65rem;">
+                    <i class="fas fa-robot me-1"></i>Bot
+                  </span>
+                {% endif %}
+                <span class="text-muted" style="font-size:.7rem;">
+                  {% if m.3 %}{{ m.3|date:"d/m/Y H:i" }}{% endif %}
+                </span>
+                {% if m.4 and m.1 == 'out' %}
+                  <span class="text-muted ms-auto" style="font-size:.65rem;" title="{{ m.4 }}">
+                    {% if m.4 == 'delivered' or m.4 == 'read' %}
+                      <i class="fas fa-check-double text-primary"></i>
+                    {% elif m.4 == 'sent' %}
+                      <i class="fas fa-check text-secondary"></i>
+                    {% elif m.4 == 'failed' %}
+                      <i class="fas fa-times-circle text-danger"></i>
+                    {% else %}
+                      <i class="fas fa-clock text-secondary"></i>
+                    {% endif %}
+                  </span>
+                {% endif %}
+              </div>
+
+              {# Contenido #}
+              <div class="small" style="white-space:pre-wrap; word-break:break-word; line-height:1.5;">{% if m.2 %}{{ m.2 }}{% else %}<span class="text-muted fst-italic">[sin contenido]</span>{% endif %}</div>
+
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      {# ── Paginación inferior ── #}
+      {% if pagination.total_pages > 1 %}
+      <div class="d-flex justify-content-center mt-4">
+        {% include "dashboard/_msg_pagination.html" %}
+      </div>
+      {% endif %}
+
+    {% else %}
+      <div class="text-center text-muted py-5">
+        <i class="fas fa-comment-slash fa-3x mb-3 opacity-25 d-block"></i>
+        No hay mensajes registrados para este cliente.
+      </div>
+    {% endif %}
+
+  </div>
+</section>
+
+{% endblock %}

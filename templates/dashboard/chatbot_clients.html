@@ -1,0 +1,454 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Chatbot — Clientes{% endblock %}
+
+{% block content %}
+
+{# ══════════════════════════════════════════════════════ HERO #}
+<section class="py-3" style="background-color:#df1d2e;">
+    <div class="container">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div>
+                <h1 class="h3 fw-bold text-white mb-0">
+                    <i class="fas fa-address-book me-2"></i>Chatbot — Clientes
+                </h1>
+                <p class="mb-0 text-white-50 small">
+                    DB Devlink{% if db_port_used %} · puerto {{ db_port_used }}{% endif %}
+                    · {{ summary.total }} cliente{{ summary.total|pluralize }}
+                </p>
+            </div>
+            <div class="d-flex gap-2">
+                <button class="btn btn-light btn-sm" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#altaForm" aria-expanded="false">
+                    <i class="fas fa-user-plus me-1"></i>Nuevo cliente
+                </button>
+                <a href="{% url 'dashboard:chatbot_statistics' %}" class="btn btn-outline-light btn-sm">
+                    <i class="fas fa-chart-line me-1"></i>Estadísticas
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-4 bg-light">
+    <div class="container">
+
+        {# ── Django messages #}
+        {% for msg in messages %}
+            <div class="alert alert-{{ msg.tags|default:'info' }} alert-dismissible fade show d-flex align-items-center gap-2" role="alert">
+                {% if 'success' in msg.tags %}<i class="fas fa-circle-check fa-lg text-success"></i>
+                {% else %}<i class="fas fa-triangle-exclamation fa-lg"></i>{% endif %}
+                <div>{{ msg }}</div>
+                <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+
+        {# ── DB error #}
+        {% if devlink_error %}
+            <div class="alert alert-danger d-flex align-items-center gap-2" role="alert">
+                <i class="fas fa-triangle-exclamation fa-lg"></i>
+                <div>{{ devlink_error }}</div>
+            </div>
+        {% endif %}
+
+        {# ══ SUMMARY CARDS ══════════════════════════════════════════ #}
+        {% if not devlink_error %}
+        <div class="row g-3 mb-4">
+            <div class="col-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center p-3">
+                        <div class="mb-1" style="color:#df1d2e;"><i class="fas fa-users fa-2x"></i></div>
+                        <div class="display-6 fw-bold mb-0">{{ summary.total }}</div>
+                        <div class="text-muted small mt-1">Total</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center p-3">
+                        <div class="mb-1 text-success"><i class="fas fa-user-check fa-2x"></i></div>
+                        <div class="display-6 fw-bold mb-0">{{ summary.active }}</div>
+                        <div class="text-muted small mt-1">Activos</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center p-3">
+                        <div class="mb-1 text-primary"><i class="fas fa-bullhorn fa-2x"></i></div>
+                        <div class="display-6 fw-bold mb-0">{{ summary.marketing }}</div>
+                        <div class="text-muted small mt-1">Acepta marketing</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {# ══ ALTA FORM (collapsible) ═════════════════════════════════ #}
+        <div class="collapse mb-4" id="altaForm">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header py-2" style="background-color:#df1d2e;">
+                    <h3 class="h6 mb-0 text-white"><i class="fas fa-user-plus me-2"></i>Alta de cliente</h3>
+                </div>
+                <div class="card-body p-3">
+                    <form method="post" class="row g-2">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="create">
+
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold mb-1" for="phone_number">Teléfono WhatsApp <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control form-control-sm" id="phone_number" name="phone_number"
+                                   placeholder="Ej: 5491132123456" required>
+                            <div class="form-text">Código país + área + número, sin signos.</div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold mb-1" for="nombre">Nombre</label>
+                            <input type="text" class="form-control form-control-sm" id="nombre" name="nombre" placeholder="Nombre completo">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold mb-1" for="alias_waba">Alias WABA</label>
+                            <input type="text" class="form-control form-control-sm" id="alias_waba" name="alias_waba" placeholder="alias">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold mb-1" for="correo">Correo electrónico</label>
+                            <input type="email" class="form-control form-control-sm" id="correo" name="correo" placeholder="email@dominio.com">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold mb-1" for="direccion">Dirección</label>
+                            <input type="text" class="form-control form-control-sm" id="direccion" name="direccion" placeholder="Dirección postal">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold mb-1" for="fecha_nacimiento">Fecha de nacimiento</label>
+                            <input type="date" class="form-control form-control-sm" id="fecha_nacimiento" name="fecha_nacimiento">
+                        </div>
+
+                        <div class="col-12 d-flex flex-wrap gap-4 align-items-center pt-1 border-top mt-1">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" role="switch" id="activo" name="activo" checked>
+                                <label class="form-check-label small fw-semibold" for="activo">Activo</label>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" role="switch" id="marketing_opt_in" name="marketing_opt_in">
+                                <label class="form-check-label small fw-semibold" for="marketing_opt_in">Acepta marketing</label>
+                            </div>
+                            <button type="submit" class="btn btn-sm ms-auto" style="background-color:#df1d2e;color:white;">
+                                <i class="fas fa-save me-1"></i>Guardar cliente
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        {# ══ LIST CARD ═══════════════════════════════════════════════ #}
+        <div class="card border-0 shadow-sm">
+            <div class="card-header py-2 bg-white border-bottom">
+                {# Search + filter row #}
+                <form method="get" class="d-flex flex-wrap gap-2 align-items-center">
+                    <input type="text" class="form-control form-control-sm" name="q" value="{{ q }}"
+                           placeholder="Buscar por teléfono o nombre" style="max-width:260px;">
+
+                    <div class="btn-group btn-group-sm" role="group">
+                        <a href="?q={{ q|urlencode }}"
+                           class="btn {% if activo_filter == '' %}btn-dark{% else %}btn-outline-secondary{% endif %}">
+                           Todos
+                        </a>
+                        <a href="?q={{ q|urlencode }}&activo_filter=1"
+                           class="btn {% if activo_filter == '1' %}btn-success{% else %}btn-outline-secondary{% endif %}">
+                           Activos
+                        </a>
+                        <a href="?q={{ q|urlencode }}&activo_filter=0"
+                           class="btn {% if activo_filter == '0' %}btn-secondary{% else %}btn-outline-secondary{% endif %}">
+                           Inactivos
+                        </a>
+                    </div>
+
+                    <button type="submit" class="btn btn-sm btn-outline-dark">
+                        <i class="fas fa-search me-1"></i>Buscar
+                    </button>
+
+                    <span class="ms-auto text-muted small">
+                        {{ pagination.total }} resultado{{ pagination.total|pluralize }}
+                        {% if pagination.total_pages > 1 %} · página {{ pagination.page }}/{{ pagination.total_pages }}{% endif %}
+                    </span>
+                </form>
+            </div>
+
+            <div class="card-body p-0">
+                {% if clients %}
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover align-middle mb-0">
+                        <thead class="table-light small">
+                            <tr>
+                                <th class="ps-3">Teléfono</th>
+                                <th>Nombre / Alias</th>
+                                <th>Correo</th>
+                                <th class="text-center">Estado</th>
+                                <th class="text-center">Marketing</th>
+                                <th class="text-end pe-2">Mensajes</th>
+                                <th>Primer contacto</th>
+                                <th>Última act.</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody class="small">
+                            {% for c in clients %}
+                            {# c: phone_number, nombre, correo, activo, mensajes_totales, created_at, updated_at, alias_waba, marketing_opt_in, primer_contacto #}
+                            <tr>
+                                <td class="ps-3 fw-bold text-nowrap">
+                                    <i class="fab fa-whatsapp text-success me-1"></i>{{ c.0 }}
+                                </td>
+                                <td>
+                                    {% if c.1 %}
+                                        <span class="fw-semibold">{{ c.1 }}</span>
+                                    {% else %}
+                                        <span class="text-muted fst-italic">—</span>
+                                    {% endif %}
+                                    {% if c.7 %}
+                                        <br><small class="text-muted">{{ c.7 }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if c.2 %}
+                                        <a href="mailto:{{ c.2 }}" class="text-decoration-none small">{{ c.2 }}</a>
+                                    {% else %}
+                                        <span class="text-muted">—</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    {% if c.3 %}
+                                        <span class="badge bg-success">Activo</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Inactivo</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    {% if c.8 %}
+                                        <i class="fas fa-check-circle text-primary" title="Acepta marketing"></i>
+                                    {% else %}
+                                        <i class="fas fa-minus-circle text-secondary" title="No acepta marketing"></i>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end pe-2 fw-semibold">{{ c.4|default:0 }}</td>
+                                <td class="text-muted text-nowrap">
+                                    {% if c.9 %}{{ c.9|date:"d/m/Y" }}{% else %}—{% endif %}
+                                </td>
+                                <td class="text-muted text-nowrap">
+                                    {{ c.6|date:"d/m/Y H:i" }}
+                                </td>
+                                <td class="text-end pe-2">
+                                    <button type="button"
+                                            class="btn btn-outline-secondary btn-sm py-0 px-2 btn-mensajes"
+                                            data-phone="{{ c.0 }}"
+                                            data-name="{{ c.1|default:c.0 }}"
+                                            title="Ver conversación">
+                                        <i class="fas fa-comments"></i>
+                                        {% if c.4 %}<span class="ms-1">{{ c.4 }}</span>{% endif %}
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                {# Pagination #}
+                {% if pagination.total_pages > 1 %}
+                <div class="d-flex justify-content-between align-items-center px-3 py-2 border-top bg-white flex-wrap gap-2">
+                    <div class="small text-muted">
+                        Mostrando {{ clients|length }} de {{ pagination.total }}
+                        &nbsp;·&nbsp; Página {{ pagination.page }} / {{ pagination.total_pages }}
+                    </div>
+                    <nav>
+                        <ul class="pagination pagination-sm mb-0 flex-wrap">
+
+                            {# Primera #}
+                            <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                                <a class="page-link" href="?q={{ q|urlencode }}&activo_filter={{ activo_filter }}&page=1" title="Primera">&laquo;&laquo;</a>
+                            </li>
+
+                            {# Anterior #}
+                            <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                                <a class="page-link" href="?q={{ q|urlencode }}&activo_filter={{ activo_filter }}&page={{ pagination.prev_page }}">&laquo;</a>
+                            </li>
+
+                            {# Ventana de páginas #}
+                            {% for pg in pagination.page_range %}
+                              <li class="page-item {% if pg == pagination.page %}active{% endif %}">
+                                <a class="page-link" href="?q={{ q|urlencode }}&activo_filter={{ activo_filter }}&page={{ pg }}">{{ pg }}</a>
+                              </li>
+                            {% endfor %}
+
+                            {# Siguiente #}
+                            <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                                <a class="page-link" href="?q={{ q|urlencode }}&activo_filter={{ activo_filter }}&page={{ pagination.next_page }}">&raquo;</a>
+                            </li>
+
+                            {# Última #}
+                            <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                                <a class="page-link" href="?q={{ q|urlencode }}&activo_filter={{ activo_filter }}&page={{ pagination.total_pages }}" title="Última">&raquo;&raquo;</a>
+                            </li>
+
+                        </ul>
+                    </nav>
+                </div>
+                {% endif %}
+
+                {% else %}
+                <div class="p-4 text-center text-muted">
+                    <i class="fas fa-user-slash fa-2x mb-2 d-block opacity-25"></i>
+                    No hay clientes para mostrar{% if q %} con ese criterio de búsqueda{% endif %}.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+</section>
+
+{# ══ MODAL MENSAJES ══════════════════════════════════════════════════════ #}
+<div class="modal fade" id="modalMensajes" tabindex="-1" aria-labelledby="modalMensajesLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+
+      <div class="modal-header py-2" style="background:#df1d2e;">
+        <h5 class="modal-title text-white" id="modalMensajesLabel">
+          <i class="fab fa-whatsapp me-2"></i><span id="modalClientName"></span>
+        </h5>
+        <div class="ms-auto d-flex align-items-center gap-2">
+          <span class="badge bg-white text-dark" id="modalMsgCount"></span>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+      </div>
+
+      <div class="modal-body p-3" id="modalBody" style="background:#f4f5f7; min-height:300px;">
+        <div class="text-center py-5 text-muted" id="modalLoading">
+          <div class="spinner-border spinner-border-sm me-2"></div>Cargando mensajes...
+        </div>
+        <div id="modalMessages" class="d-flex flex-column gap-2"></div>
+      </div>
+
+      <div class="modal-footer py-2 justify-content-between" id="modalFooter" style="display:none!important;">
+        <span class="small text-muted" id="modalPagInfo"></span>
+        <div class="d-flex gap-2">
+          <button class="btn btn-sm btn-outline-secondary" id="btnPrev" disabled>
+            <i class="fas fa-chevron-left"></i> Anterior
+          </button>
+          <button class="btn btn-sm btn-outline-secondary" id="btnNext" disabled>
+            Siguiente <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  let currentPhone = null;
+  let currentPage  = 1;
+  let totalPages   = 1;
+  let bsModal      = null;   // inicializado lazy
+
+  const modal      = document.getElementById('modalMensajes');
+  const bodyEl     = document.getElementById('modalMessages');
+  const loadingEl  = document.getElementById('modalLoading');
+  const footerEl   = document.getElementById('modalFooter');
+  const pagInfoEl  = document.getElementById('modalPagInfo');
+  const btnPrev    = document.getElementById('btnPrev');
+  const btnNext    = document.getElementById('btnNext');
+  const countBadge = document.getElementById('modalMsgCount');
+  const nameEl     = document.getElementById('modalClientName');
+
+  function renderMsg(m) {
+    const isIn = m.direccion === 'in';
+    const status = isIn ? '' : ({
+      'delivered': '<i class="fas fa-check-double text-primary"></i>',
+      'read':      '<i class="fas fa-check-double text-primary"></i>',
+      'sent':      '<i class="fas fa-check text-secondary"></i>',
+      'failed':    '<i class="fas fa-times-circle text-danger"></i>',
+    }[m.delivery_status] || '<i class="fas fa-clock text-secondary"></i>');
+
+    const label = isIn
+      ? `<span class="badge rounded-pill" style="background:#df1d2e;font-size:.65rem"><i class="fas fa-arrow-down me-1"></i>Cliente</span>`
+      : `<span class="badge rounded-pill bg-success" style="font-size:.65rem"><i class="fas fa-robot me-1"></i>Bot</span>`;
+
+    const text = m.contenido
+      ? m.contenido.replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      : '<em class="text-muted">[sin contenido]</em>';
+
+    return `
+    <div class="d-flex ${isIn ? 'justify-content-start' : 'justify-content-end'}">
+      <div class="p-2 rounded-3 shadow-sm"
+           style="max-width:78%;background:${isIn?'#fff':'#dcf8c6'};border:1px solid ${isIn?'#dee2e6':'#b2dfb0'}">
+        <div class="d-flex align-items-center gap-2 mb-1">
+          ${label}
+          <span style="font-size:.7rem" class="text-muted">${m.ts}</span>
+          ${status ? `<span class="ms-auto" style="font-size:.65rem">${status}</span>` : ''}
+        </div>
+        <div style="white-space:pre-wrap;word-break:break-word;font-size:.85rem;line-height:1.45">${text}</div>
+      </div>
+    </div>`;
+  }
+
+  function loadPage(phone, page) {
+    loadingEl.style.display = 'block';
+    bodyEl.innerHTML = '';
+    footerEl.style.setProperty('display', 'none', 'important');
+
+    fetch(`/dashboard/chatbot/clients/${encodeURIComponent(phone)}/messages/json/?page=${page}`)
+      .then(r => r.json())
+      .then(data => {
+        loadingEl.style.display = 'none';
+        if (data.error) {
+          bodyEl.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+          return;
+        }
+        currentPage = data.page;
+        totalPages  = data.total_pages;
+        countBadge.textContent = data.total + ' mensajes';
+        pagInfoEl.textContent  = `Página ${data.page} / ${data.total_pages}`;
+        btnPrev.disabled = data.page <= 1;
+        btnNext.disabled = !data.has_next;
+
+        if (data.messages.length === 0) {
+          bodyEl.innerHTML = '<div class="text-center text-muted py-4"><i class="fas fa-comment-slash fa-2x mb-2 d-block opacity-25"></i>Sin mensajes registrados.</div>';
+        } else {
+          // Invertir para mostrar cronológico: más antiguo arriba, más reciente abajo
+          bodyEl.innerHTML = [...data.messages].reverse().map(renderMsg).join('');
+        }
+        if (data.total_pages > 1) {
+          footerEl.style.removeProperty('display');
+        }
+      })
+      .catch(err => {
+        loadingEl.style.display = 'none';
+        bodyEl.innerHTML = `<div class="alert alert-danger">Error al cargar: ${err}</div>`;
+      });
+  }
+
+  document.querySelectorAll('.btn-mensajes').forEach(btn => {
+    btn.addEventListener('click', () => {
+      // Inicializar el modal la primera vez que se necesita (Bootstrap ya cargó)
+      if (!bsModal) bsModal = new bootstrap.Modal(modal);
+      currentPhone = btn.dataset.phone;
+      currentPage  = 1;
+      nameEl.textContent = btn.dataset.name || currentPhone;
+      countBadge.textContent = '';
+      loadPage(currentPhone, 1);
+      bsModal.show();
+    });
+  });
+
+  btnPrev.addEventListener('click', () => { if (currentPage > 1) loadPage(currentPhone, currentPage - 1); });
+  btnNext.addEventListener('click', () => { if (currentPage < totalPages) loadPage(currentPhone, currentPage + 1); });
+})();
+</script>
+{% endblock %}

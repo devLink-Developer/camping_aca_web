@@ -1,0 +1,428 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Escanear Voucher - {{ site_config.site_name }}{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="bg-dark text-white py-3">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="h3 fw-bold mb-1">
+                    <i class="fas fa-qrcode me-2"></i>Escanear Voucher
+                </h1>
+                <p class="mb-0 small">
+                    Valida y usa vouchers escaneando el código QR
+                </p>
+            </div>
+            <div class="col-md-4 text-end">
+                <a href="{% url 'vouchers:list' %}" class="btn btn-light btn-sm">
+                    <i class="fas fa-arrow-left me-1"></i>Volver
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Scanner Interface -->
+<section class="py-3">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <!-- Resultado del escaneo -->
+                <div id="scanResult" class="alert d-none mb-4" role="alert"></div>
+                
+                <!-- Scanner Card -->
+                <div class="card border-0 shadow-sm mb-4" data-aos="zoom-in">
+                    <div class="card-body p-3">
+                        <h3 class="h6 text-center mb-3 fw-bold">
+                            <i class="fas fa-camera me-2"></i>Escanear Código QR
+                        </h3>
+
+                        <div class="text-center">
+                            <button id="openScanModal" class="btn btn-sm px-4 text-white" style="background-color: #df1d2e;">
+                                <i class="fas fa-qrcode me-2"></i>Escanear QR
+                            </button>
+                            <div class="small text-muted mt-2">
+                                Se abrirá la cámara automáticamente y se cerrará al detectar un QR.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Manual Input Card -->
+                <div class="card border-0 shadow-sm" data-aos="fade-up">
+                    <div class="card-body p-3">
+                        <h3 class="h6 text-center mb-3 fw-bold">
+                            <i class="fas fa-keyboard me-2"></i>O Ingresa el Código Manualmente
+                        </h3>
+                        <form id="manualForm" class="row g-3">
+                            <div class="col-md-8">
+                                <input type="text" class="form-control form-control-sm" id="manualCode" 
+                                       placeholder="Código del voucher" required>
+                            </div>
+                            <div class="col-md-4">
+                                <button type="submit" class="btn btn-sm w-100 text-dark" style="background-color: #48ff00;">
+                                    <i class="fas fa-search me-2"></i>Validar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Modal Scanner QR -->
+<div class="modal fade" id="scanQrModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header voucher-modal-header">
+                <h5 class="modal-title text-white fw-bold">
+                    <i class="fas fa-camera me-2"></i>Escáner QR
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center">
+                    <div id="qr-reader" class="qr-reader-frame"></div>
+                    <div id="scanHint" class="small text-muted mt-2">
+                        Apuntá la cámara al código QR del voucher.
+                    </div>
+                    <div id="scanLoading" class="d-none mt-3">
+                        <div class="spinner-border" role="status" aria-hidden="true"></div>
+                        <div class="small text-muted mt-2">Iniciando cámara…</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para confirmar uso -->
+<div class="modal fade" id="useVoucherModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header voucher-modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-check-circle me-2"></i>Voucher Válido
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="voucherDetails"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn text-dark fw-bold" style="background-color: #48ff00;" id="confirmUseBtn">
+                    <i class="fas fa-check me-2"></i>Confirmar Uso
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .voucher-modal-header {
+        background: linear-gradient(135deg, #505c4e 0%, #df1d2e 85%, #ffc628 140%);
+    }
+    .qr-reader-frame {
+        width: 100%;
+        max-width: 640px;
+        margin: 0 auto;
+        border-radius: 12px;
+        overflow: hidden;
+        background: #111;
+        min-height: 360px;
+    }
+    .voucher-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+        background: rgba(223, 29, 46, 0.08);
+        color: #df1d2e;
+        border: 1px solid rgba(223, 29, 46, 0.25);
+    }
+    .voucher-pill.voucher-pill--ok {
+        background: rgba(72, 255, 0, 0.10);
+        color: #2a2a2a;
+        border-color: rgba(72, 255, 0, 0.35);
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<!-- HTML5 QR Code Scanner -->
+<script src="https://unpkg.com/html5-qrcode"></script>
+
+<script>
+let html5QrCode = null;
+let isScanning = false;
+let scanLocked = false;
+let currentVoucherCode = null;
+
+const scanModalEl = document.getElementById('scanQrModal');
+const scanModal = new bootstrap.Modal(scanModalEl);
+
+function setScanLoading(isLoading) {
+    const loading = document.getElementById('scanLoading');
+    const hint = document.getElementById('scanHint');
+    if (isLoading) {
+        loading.classList.remove('d-none');
+        hint.classList.add('d-none');
+    } else {
+        loading.classList.add('d-none');
+        hint.classList.remove('d-none');
+    }
+}
+
+async function startScanner() {
+    if (isScanning) return;
+    scanLocked = false;
+    setScanLoading(true);
+
+    try {
+        const cameras = await Html5Qrcode.getCameras();
+        if (!cameras || cameras.length === 0) {
+            throw new Error('No se detectaron cámaras disponibles');
+        }
+
+        // Preferir cámara trasera si existe
+        const preferred = cameras.find(c => (c.label || '').toLowerCase().includes('back') || (c.label || '').toLowerCase().includes('rear')) || cameras[0];
+        html5QrCode = new Html5Qrcode('qr-reader');
+
+        await html5QrCode.start(
+            { deviceId: { exact: preferred.id } },
+            { fps: 10, qrbox: { width: 260, height: 260 } },
+            onScanSuccess,
+            onScanError
+        );
+
+        isScanning = true;
+    } catch (err) {
+        showError((err && err.message) ? err.message : ('Error al iniciar la cámara: ' + err));
+        // cerrar modal si no se puede iniciar
+        scanModal.hide();
+    } finally {
+        setScanLoading(false);
+    }
+}
+
+async function stopScanner() {
+    scanLocked = true;
+    if (!html5QrCode) return;
+
+    try {
+        if (isScanning) {
+            await html5QrCode.stop();
+        }
+    } catch (e) {
+        // ignorar
+    }
+
+    try {
+        html5QrCode.clear();
+    } catch (e) {
+        // ignorar
+    }
+
+    html5QrCode = null;
+    isScanning = false;
+}
+
+document.getElementById('openScanModal').addEventListener('click', function() {
+    scanModal.show();
+});
+
+scanModalEl.addEventListener('shown.bs.modal', function() {
+    startScanner();
+});
+
+scanModalEl.addEventListener('hidden.bs.modal', function() {
+    stopScanner();
+});
+
+function onScanSuccess(decodedText, decodedResult) {
+    if (scanLocked) return;
+    scanLocked = true;
+
+    // cerrar y detener scanner automáticamente
+    stopScanner().finally(() => {
+        scanModal.hide();
+        validateVoucher(decodedText);
+    });
+}
+
+function onScanError(errorMessage) {
+    // Errores normales del scanner, ignorar
+}
+
+// Validar voucher
+function validateVoucher(code) {
+    fetch('{% url "vouchers:validate" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({ voucher_code: code })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            currentVoucherCode = code;
+            showVoucherDetails(data.voucher);
+        } else {
+            showError(data.error);
+        }
+    })
+    .catch(error => {
+        showError('Error de conexión: ' + error);
+    });
+}
+
+function showVoucherDetails(voucher) {
+    const voucherCode = voucher.voucher_code || voucher.code || voucher.voucherCode || '';
+    const clientName = voucher.client_name || '';
+    const clientEmail = voucher.client_email || '';
+    const clientPhone = voucher.client_phone || '';
+    const clientId = voucher.client_id || '';
+
+    const status = voucher.status || '';
+    const statusDisplay = voucher.status_display || status;
+
+    const voucherType = voucher.voucher_type || '';
+    const voucherTypeDisplay = voucher.voucher_type_display || voucherType;
+
+    const value = voucher.value ?? voucher.amount ?? '';
+    const percentage = voucher.percentage ?? '';
+    const benefitDescription = voucher.benefit_description || '';
+    const description = voucher.description || '';
+    const serviceType = voucher.service_type || '';
+
+    const issueDate = voucher.issue_date || '';
+    const expirationDate = voucher.expiration_date || '';
+    const daysLeft = (voucher.days_left ?? voucher.days_until_expiration ?? null);
+
+    const sent = (voucher.sent === true) ? 'Sí' : (voucher.sent === false ? 'No' : '');
+    const sentDate = voucher.sent_date || '';
+
+    const usedDate = voucher.used_date || '';
+    const usedBy = voucher.used_by || '';
+
+    const pillClass = (status === 'active') ? 'voucher-pill voucher-pill--ok' : 'voucher-pill';
+    const daysLeftHtml = (daysLeft === null || daysLeft === undefined || daysLeft === '')
+        ? ''
+        : `<div class="mt-2"><span class="voucher-pill"><i class="fas fa-hourglass-half"></i>${daysLeft} días restantes</span></div>`;
+
+    let benefitHtml = '';
+    if (voucherType === 'amount' && value !== '' && value !== null && value !== undefined) {
+        benefitHtml = `<tr><th>Valor</th><td class="fw-bold">$${value}</td></tr>`;
+    } else if (voucherType === 'percentage' && percentage !== '' && percentage !== null && percentage !== undefined) {
+        benefitHtml = `<tr><th>Descuento</th><td class="fw-bold">${percentage}%</td></tr>`;
+    } else if (voucherType === 'free_text' && benefitDescription) {
+        benefitHtml = `<tr><th>Beneficio</th><td class="fw-bold">${benefitDescription}</td></tr>`;
+    } else if (value !== '' && value !== null && value !== undefined) {
+        benefitHtml = `<tr><th>Valor</th><td class="fw-bold">$${value}</td></tr>`;
+    }
+
+    const html = `
+        <div class="text-center mb-3">
+            <div class="h4 mb-1" style="color:#df1d2e; font-weight:800;">${voucherCode}</div>
+            <div class="d-flex justify-content-center align-items-center gap-2 flex-wrap">
+                <span class="${pillClass}"><i class="fas fa-circle-check"></i>${statusDisplay}</span>
+                ${voucherTypeDisplay ? `<span class="voucher-pill"><i class="fas fa-ticket"></i>${voucherTypeDisplay}</span>` : ''}
+            </div>
+            ${daysLeftHtml}
+        </div>
+        <table class="table table-sm align-middle">
+            <tr><th style="width:42%">Cliente</th><td>${clientName}</td></tr>
+            ${clientId ? `<tr><th>ID Cliente</th><td>${clientId}</td></tr>` : ''}
+            <tr><th>Email</th><td>${clientEmail}</td></tr>
+            <tr><th>Teléfono</th><td>${clientPhone}</td></tr>
+            ${benefitHtml}
+            ${serviceType ? `<tr><th>Servicio</th><td>${serviceType}</td></tr>` : ''}
+            ${description ? `<tr><th>Descripción</th><td>${description}</td></tr>` : ''}
+            ${issueDate ? `<tr><th>Emitido</th><td>${issueDate}</td></tr>` : ''}
+            <tr><th>Válido hasta</th><td>${expirationDate}</td></tr>
+            ${(sent !== '') ? `<tr><th>Enviado</th><td>${sent}${sentDate ? ` (${sentDate})` : ''}</td></tr>` : ''}
+            ${usedDate ? `<tr><th>Usado</th><td>${usedDate}${usedBy ? ` por ${usedBy}` : ''}</td></tr>` : ''}
+        </table>
+    `;
+    
+    document.getElementById('voucherDetails').innerHTML = html;
+    new bootstrap.Modal(document.getElementById('useVoucherModal')).show();
+}
+
+function showError(message) {
+    const resultDiv = document.getElementById('scanResult');
+    resultDiv.className = 'alert alert-danger';
+    resultDiv.innerHTML = `<i class="fas fa-times-circle me-2"></i>${message}`;
+    resultDiv.classList.remove('d-none');
+    
+    setTimeout(() => {
+        resultDiv.classList.add('d-none');
+    }, 5000);
+}
+
+function showSuccess(message) {
+    const resultDiv = document.getElementById('scanResult');
+    resultDiv.className = 'alert alert-success';
+    resultDiv.innerHTML = `<i class="fas fa-check-circle me-2"></i>${message}`;
+    resultDiv.classList.remove('d-none');
+}
+
+// Confirmar uso del voucher
+document.getElementById('confirmUseBtn').addEventListener('click', function() {
+    fetch('{% url "vouchers:use" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({ voucher_code: currentVoucherCode })
+    })
+    .then(response => response.json())
+    .then(data => {
+        bootstrap.Modal.getInstance(document.getElementById('useVoucherModal')).hide();
+        
+        if (data.success) {
+            showSuccess(data.message);
+            currentVoucherCode = null;
+        } else {
+            showError(data.error);
+        }
+    })
+    .catch(error => {
+        showError('Error de conexión: ' + error);
+    });
+});
+
+// Formulario manual
+document.getElementById('manualForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const code = document.getElementById('manualCode').value.trim();
+    if (code) {
+        validateVoucher(code);
+        document.getElementById('manualCode').value = '';
+    }
+});
+
+// Autostart: al entrar desde la lista abrir el scanner automáticamente
+document.addEventListener('DOMContentLoaded', function() {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('autostart') === '1') {
+        scanModal.show();
+    }
+});
+</script>
+{% endblock %}
