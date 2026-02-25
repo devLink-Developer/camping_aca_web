@@ -3,6 +3,14 @@ set -e
 
 echo "Starting Camping ACA Luján application..."
 
+# Fix permissions on bind-mounted volumes (they may be owned by root on the host)
+chown -R appuser:appuser /app/logs /app/media /app/staticfiles 2>/dev/null || true
+
+# Re-exec the entire script as appuser now that permissions are fixed
+if [ "$(id -u)" = "0" ]; then
+    exec gosu appuser "$0" "$@"
+fi
+
 # Wait for database to be ready
 echo "Waiting for database..."
 python << END

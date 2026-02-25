@@ -30,6 +30,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 # Install runtime dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq5 \
+    gosu \
     && rm -rf /var/lib/apt/lists/*
 
 # Create app user
@@ -50,9 +51,7 @@ COPY --chown=appuser:appuser . .
 # Make entrypoint executable
 RUN chmod +x /app/entrypoint.sh
 
-# Switch to app user
-USER appuser
-
+# Runs as root; entrypoint will fix volume permissions then exec as appuser
 # Expose port
 EXPOSE 8007
 
