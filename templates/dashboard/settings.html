@@ -88,10 +88,20 @@
                             <label for="tagline" class="form-label small fw-bold mb-1">Lema/Tagline</label>
                             <input type="text" class="form-control form-control-sm" id="tagline" name="tagline" value="{{ site_config.tagline }}">
                         </div>
-                        <div class="col-md-12">
+                        <div class="col-md-6">
+                            <label for="logo" class="form-label small fw-bold mb-1">Logo</label>
+                            {% if site_config.logo %}
+                            <div class="mb-2">
+                                <img src="{{ site_config.logo.url }}" alt="Logo actual" class="img-thumbnail" style="max-height: 80px;">
+                            </div>
+                            {% endif %}
+                            <input type="file" class="form-control form-control-sm" id="logo" name="logo" accept="image/*">
+                            <div class="form-text small">Se usa en el navbar y como favicon del sitio.</div>
+                        </div>
+                        <div class="col-md-6">
                             <label for="hero_image" class="form-label small fw-bold mb-1">Imagen Hero</label>
                             {% if site_config.hero_image %}
-                            <div class="mb-1">
+                            <div class="mb-2">
                                 <img src="{{ site_config.hero_image.url }}" alt="Hero" class="img-thumbnail" style="max-height: 80px;">
                             </div>
                             {% endif %}

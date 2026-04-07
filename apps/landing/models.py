@@ -463,6 +463,7 @@ class SiteConfiguration(models.Model):
     """Configuración general del sitio"""
     site_name = models.CharField('Nombre del sitio', max_length=200, default='Camping ACA Luján')
     tagline = models.CharField('Eslogan', max_length=500, default='Un lugar para vos')
+    logo = models.ImageField('Logo', upload_to='config/', blank=True, null=True)
     hero_image = models.ImageField('Imagen principal', upload_to='config/', blank=True, null=True)
     hero_focus_x = models.IntegerField('Foco horizontal Hero (%)', default=50, validators=[MinValueValidator(0), MaxValueValidator(100)])
     hero_focus_y = models.IntegerField('Foco vertical Hero (%)', default=28, validators=[MinValueValidator(0), MaxValueValidator(100)])

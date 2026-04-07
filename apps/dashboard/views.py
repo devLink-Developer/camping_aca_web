@@ -195,6 +195,23 @@ def dashboard_settings(request):
         site_config.facebook_url = request.POST.get('facebook_url', site_config.facebook_url)
         site_config.special_alert = request.POST.get('special_alert', site_config.special_alert)
         site_config.is_alert_active = request.POST.get('is_alert_active') == 'on'
+
+        if 'logo' in request.FILES:
+            logo_file = request.FILES['logo']
+            try:
+                logo_file.seek(0)
+                with Image.open(logo_file):
+                    pass
+            except (UnidentifiedImageError, OSError):
+                messages.error(request, '❌ El logo no parece ser un archivo de imagen válido.')
+                return redirect('dashboard:settings')
+            finally:
+                try:
+                    logo_file.seek(0)
+                except Exception:
+                    pass
+
+            site_config.logo = logo_file
         
         # Manejar imagen hero si se sube
         if 'hero_image' in request.FILES:

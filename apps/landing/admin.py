@@ -85,7 +85,7 @@ class ContactMessageAdmin(admin.ModelAdmin):
 class SiteConfigurationAdmin(admin.ModelAdmin):
     fieldsets = (
         ('Información General', {
-            'fields': ('site_name', 'tagline', 'hero_image')
+            'fields': ('site_name', 'tagline', 'logo', 'hero_image')
         }),
         ('Contacto', {
             'fields': ('phone', 'email', 'address', 'opening_hours')

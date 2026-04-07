@@ -34,16 +34,6 @@
 <section class="py-4 bg-light">
     <div class="container">
 
-        {# ── Django messages #}
-        {% for msg in messages %}
-            <div class="alert alert-{{ msg.tags|default:'info' }} alert-dismissible fade show d-flex align-items-center gap-2" role="alert">
-                {% if 'success' in msg.tags %}<i class="fas fa-circle-check fa-lg text-success"></i>
-                {% else %}<i class="fas fa-triangle-exclamation fa-lg"></i>{% endif %}
-                <div>{{ msg }}</div>
-                <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
-            </div>
-        {% endfor %}
-
         {# ── DB error #}
         {% if devlink_error %}
             <div class="alert alert-danger d-flex align-items-center gap-2" role="alert">
