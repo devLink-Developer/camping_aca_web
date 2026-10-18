@@ -73,7 +73,7 @@ Los comandos Docker y `entrypoint.sh` descritos a continuación corresponden al 
 
 ## 🛠️ Tecnologías Utilizadas
 
-- **Backend**: Django 5.0.1, Python 3.11
+- **Backend**: Django 5.2, Python 3.11
 - **Base de Datos**: PostgreSQL
 - **Frontend**: Bootstrap 5, JavaScript, AOS, Swiper.js
 - **QR Codes**: qrcode library con PIL

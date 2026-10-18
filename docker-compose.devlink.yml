@@ -19,6 +19,14 @@ services:
       DB_NAME: camping_aca_devlink
       DB_HOST: devlink_db
       DB_PORT: "5455"
+      # The review instance must never write to DevLink's separate CRM database.
+      DEVLINK_DB_HOST: 127.0.0.1
+      DEVLINK_DB_PORT_INTERNAL: "9"
+      DEVLINK_DB_PORT_EXTERNAL: "9"
+      DEVLINK_DB_NAME: review_disabled
+      DEVLINK_DB_USER: review_disabled
+      DEVLINK_DB_PASSWORD: ""
+      DEVLINK_DB_CONNECT_TIMEOUT: "1"
     # The database is restored explicitly; startup never seeds or changes users.
     entrypoint: ["/bin/sh", "-c"]
     command:
