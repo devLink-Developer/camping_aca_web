@@ -49,9 +49,9 @@ db.sqlite3-journal
 Thumbs.db
 
 # Docker
-.dockerignore
 
 # Database
 *.db
 *.sqlite
 *.sqlite3
+.preview-server.pid

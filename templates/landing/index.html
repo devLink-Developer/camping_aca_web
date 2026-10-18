@@ -1,26 +1,35 @@
 {% extends 'base.html' %}
 {% load static %}
 
+{% block body_class %}landing-redesign{% endblock %}
+{% block title %}Camping ACA Luján | Un respiro, cerca de todo{% endblock %}
+{% block meta_description %}Disfrutá del Camping ACA Luján: naturaleza, momentos al aire libre y un lugar para compartir. Conocé el predio, sus servicios y tarifas.{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/landing.css' %}?v=20261018-contrast">
+{% if not site_config.logo %}<link rel="icon" href="{% static 'images/landing/logo-centro-recreativo.webp' %}">{% endif %}
+{% endblock %}
+
 {% block content %}
 <!-- Hero Section -->
-<section id="top" class="hero-section" style="background-image: url('{% if site_config.hero_image %}{{ site_config.hero_image.url }}{% else %}{% static 'images/hero-default.jpg' %}{% endif %}');">
+<section id="top" class="hero-section landing-hero" aria-labelledby="landingTitle">
+    <img class="landing-hero__image" src="{% if site_config.hero_image %}{{ site_config.hero_image.url }}{% else %}{% static 'images/landing/forest.webp' %}{% endif %}" alt="Sendero del Camping ACA Luján bajo una arboleda" fetchpriority="high" width="1600" height="900" style="object-position: {{ site_config.hero_focus_x|default_if_none:50 }}% {{ site_config.hero_focus_y|default_if_none:50 }}%;">
     <div class="hero-overlay">
         <div class="container">
-            <div class="hero-content hero-content--classic text-center text-white">
-                <h1 class="hero-title hero-title--classic mb-3" data-aos="fade-up">
-                    <span class="text-white">CAMPING Luján</span>
-                    <span class="text-danger">ACA</span>
+            <div class="hero-content text-white">
+                <p class="hero-eyebrow">Camping ACA Luján</p>
+                <h1 id="landingTitle" class="hero-title" data-aos="fade-up">
+                    Un respiro,<span>cerca de todo.</span>
                 </h1>
-                <p class="hero-subtitle hero-subtitle--classic mb-4" data-aos="fade-up" data-aos-delay="100">
-                    {{ site_config.tagline|default:"Un lugar para vos" }}
+                <p class="hero-subtitle" data-aos="fade-up" data-aos-delay="100">
+                    Un mate bajo los árboles. Tiempo para compartir.<br>Tu próxima escapada empieza en Luján.
                 </p>
 
-                <div class="hero-actions hero-actions--classic justify-content-center" data-aos="fade-up" data-aos-delay="150">
-                    <a href="#servicios" class="btn btn-warning px-4 py-2 fw-bold">
-                        <i class="fas fa-compass me-2" aria-hidden="true"></i>Ver servicios
+                <div class="hero-actions" data-aos="fade-up" data-aos-delay="150">
+                    <a href="#servicios" class="btn btn-light">
+                        Conocé el camping <i class="fas fa-arrow-right ms-2" aria-hidden="true"></i>
                     </a>
-                    <a href="#contacto" class="btn btn-primary px-4 py-2 fw-bold">
-                        <i class="fas fa-paper-plane me-2" aria-hidden="true"></i>Consultar
+                    <a href="#precios" class="hero-secondary">
+                        Ver tarifas <i class="fas fa-arrow-up-right-from-square ms-2" aria-hidden="true"></i>
                     </a>
                 </div>
             </div>
@@ -28,46 +37,41 @@
     </div>
 </section>
 
-<!-- Marketing / Registro -->
-<section id="registro" class="py-5" style="background: linear-gradient(135deg, rgba(80,92,78,0.08) 0%, rgba(255,198,40,0.12) 100%);">
-    <div class="container">
-        <div class="row align-items-center g-4">
-            <div class="col-lg-6" data-aos="fade-right">
-                <div class="landing-promo-card">
-                    <div class="section-kicker">Beneficios para registrados</div>
-                    <h2 class="display-6 fw-bold mb-3">
-                        Recibí regalos, novedades y ofertas especiales.
-                    </h2>
-                    <p class="lead mb-3">
-                        Creá tu usuario con tu email y activá una relación directa con el camping para enterarte antes de cada promo.
-                    </p>
-                    <ul class="list-unstyled mb-0 benefit-list">
-                        <li><i class="fas fa-check-circle" aria-hidden="true"></i><span>Promociones y novedades por email</span></li>
-                        <li><i class="fas fa-check-circle" aria-hidden="true"></i><span>Beneficios especiales durante el año</span></li>
-                        <li><i class="fas fa-check-circle" aria-hidden="true"></i><span>Un regalo cerca de tu cumpleaños</span></li>
-                    </ul>
-                </div>
-            </div>
+<div class="visit-strip" aria-label="Planificá tu visita">
+    <div class="container visit-strip__grid">
+        <div class="visit-strip__item"><i class="fas fa-location-dot" aria-hidden="true"></i><div><strong>Tu lugar en Luján</strong><small>Provincia de Buenos Aires</small></div></div>
+        <div class="visit-strip__item"><i class="fas fa-tree" aria-hidden="true"></i><div><strong>25 hectáreas de bosque</strong><small>Naturaleza para compartir</small></div></div>
+        <div class="visit-strip__item"><i class="far fa-clock" aria-hidden="true"></i><div><strong>Organizá tu día</strong><small>{% if site_config.opening_hours %}{{ site_config.opening_hours }}{% else %}Consultá los horarios{% endif %}</small></div></div>
+        <a class="visit-strip__item" href="#contacto"><i class="far fa-comment-dots" aria-hidden="true"></i><div><strong>¿Venís en grupo?</strong><small>Planifiquemos la visita <i class="fas fa-arrow-right" aria-hidden="true"></i></small></div></a>
+    </div>
+</div>
 
-            <div class="col-lg-6" data-aos="fade-left">
-                <div class="landing-cta-card">
-                    <h3 class="h4 fw-bold mb-2" style="color:#df1d2e;">Sumate en 1 minuto</h3>
-                    <p class="text-muted mb-3">Registrate para recibir regalos y ofertas especiales.</p>
+<!-- Alert Section -->
+{% if site_config.is_alert_active and site_config.special_alert %}
+<div class="container my-3">
+    <div class="site-alert" role="alert" aria-live="polite">
+        <div class="site-alert__inner">
+            <span class="site-alert__icon" aria-hidden="true">
+                <i class="fas fa-triangle-exclamation"></i>
+            </span>
+            <span class="site-alert__text">{{ site_config.special_alert }}</span>
+        </div>
+    </div>
+</div>
+{% endif %}
 
-                    <button type="button" class="btn w-100 py-3" data-bs-toggle="modal" data-bs-target="#registerModal" style="background:#ffc628; color:#2a2a2a; font-weight:700; border:2px solid rgba(223,29,46,0.65);">
-                        <i class="fas fa-user-check me-2"></i>Registrarme
-                    </button>
-
-                    <div class="d-flex justify-content-between align-items-center mt-3">
-                        <a href="{% url 'landing:password_reset' %}" class="small" style="color:#505c4e; text-decoration: underline;">
-                            Recuperar contraseña
-                        </a>
-                        <a href="{% url 'landing:acceso' %}" class="small" style="color:#df1d2e; text-decoration: underline;" data-bs-toggle="modal" data-bs-target="#loginModal" onclick="event.preventDefault();">
-                            Ya tengo cuenta
-                        </a>
-                    </div>
-                </div>
-            </div>
+<section class="landing-intro" aria-labelledby="introTitle">
+    <div class="container intro-grid">
+        <div class="intro-copy" data-aos="fade-up">
+            <p class="editorial-label">Aire libre. Buena compañía.</p>
+            <h2 id="introTitle">Los mejores planes<br>son los más simples.</h2>
+            <p>Estirar la sobremesa. Salir a caminar. Compartir unos mates mientras los chicos juegan. Hay días que piden un poco más de verde.</p>
+            <p>En el Camping ACA Luján, encontrá tu manera de disfrutar el tiempo afuera.</p>
+            <a class="text-link" href="#galeria">Mirá el lugar que te espera <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+        </div>
+        <div class="intro-photos" data-aos="fade-up">
+            <figure class="intro-photo--main"><img src="{% static 'images/landing/picnic.webp' %}" alt="Una mesa compartida a la sombra de los árboles del camping" width="850" height="567" loading="lazy"></figure>
+            <figure class="intro-photo--detail"><img src="{% static 'images/landing/mate.webp' %}" alt="Mate y termo sobre una mesa del predio" width="850" height="567" loading="lazy"></figure>
         </div>
     </div>
 </section>
@@ -97,14 +101,14 @@
 
                     <div class="row g-2">
                         <div class="col-md-6">
-                            <label class="form-label fw-bold small mb-1">{{ registration_form.first_name.label }} <span class="text-danger">*</span></label>
+                            <label class="form-label fw-bold small mb-1" for="{{ registration_form.first_name.id_for_label }}">{{ registration_form.first_name.label }} <span class="text-danger">*</span></label>
                             {{ registration_form.first_name }}
                             {% if registration_form.first_name.errors %}
                                 <div class="text-danger small">{{ registration_form.first_name.errors.0 }}</div>
                             {% endif %}
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-bold small mb-1">{{ registration_form.last_name.label }} <span class="text-danger">*</span></label>
+                            <label class="form-label fw-bold small mb-1" for="{{ registration_form.last_name.id_for_label }}">{{ registration_form.last_name.label }} <span class="text-danger">*</span></label>
                             {{ registration_form.last_name }}
                             {% if registration_form.last_name.errors %}
                                 <div class="text-danger small">{{ registration_form.last_name.errors.0 }}</div>
@@ -112,7 +116,7 @@
                         </div>
 
                         <div class="col-12">
-                            <label class="form-label fw-bold small mb-1">{{ registration_form.email.label }} <span class="text-danger">*</span></label>
+                            <label class="form-label fw-bold small mb-1" for="{{ registration_form.email.id_for_label }}">{{ registration_form.email.label }} <span class="text-danger">*</span></label>
                             {{ registration_form.email }}
                             <div class="form-text small">Este email será tu usuario.</div>
                             {% if registration_form.email.errors %}
@@ -121,7 +125,7 @@
                         </div>
 
                         <div class="col-12">
-                            <label class="form-label fw-bold small mb-1">{{ registration_form.birth_date.label }} <span class="text-danger">*</span></label>
+                            <label class="form-label fw-bold small mb-1" for="{{ registration_form.birth_date.id_for_label }}">{{ registration_form.birth_date.label }} <span class="text-danger">*</span></label>
                             {{ registration_form.birth_date }}
                             {% if registration_form.birth_date.errors %}
                                 <div class="text-danger small">{{ registration_form.birth_date.errors.0 }}</div>
@@ -129,14 +133,14 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label fw-bold small mb-1">{{ registration_form.dni.label }}</label>
+                            <label class="form-label fw-bold small mb-1" for="{{ registration_form.dni.id_for_label }}">{{ registration_form.dni.label }}</label>
                             {{ registration_form.dni }}
                             {% if registration_form.dni.errors %}
                                 <div class="text-danger small">{{ registration_form.dni.errors.0 }}</div>
                             {% endif %}
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-bold small mb-1">{{ registration_form.phone.label }}</label>
+                            <label class="form-label fw-bold small mb-1" for="{{ registration_form.phone.id_for_label }}">{{ registration_form.phone.label }}</label>
                             {{ registration_form.phone }}
                             {% if registration_form.phone.errors %}
                                 <div class="text-danger small">{{ registration_form.phone.errors.0 }}</div>
@@ -144,14 +148,14 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label fw-bold small mb-1">{{ registration_form.password1.label }} <span class="text-danger">*</span></label>
+                            <label class="form-label fw-bold small mb-1" for="{{ registration_form.password1.id_for_label }}">{{ registration_form.password1.label }} <span class="text-danger">*</span></label>
                             {{ registration_form.password1 }}
                             {% if registration_form.password1.errors %}
                                 <div class="text-danger small">{{ registration_form.password1.errors.0 }}</div>
                             {% endif %}
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-bold small mb-1">{{ registration_form.password2.label }} <span class="text-danger">*</span></label>
+                            <label class="form-label fw-bold small mb-1" for="{{ registration_form.password2.id_for_label }}">{{ registration_form.password2.label }} <span class="text-danger">*</span></label>
                             {{ registration_form.password2 }}
                             {% if registration_form.password2.errors %}
                                 <div class="text-danger small">{{ registration_form.password2.errors.0 }}</div>
@@ -177,63 +181,34 @@
     </div>
 </div>
 
-<!-- Alert Section -->
-{% if site_config.is_alert_active and site_config.special_alert %}
-<div class="container my-3">
-    <div class="site-alert" role="alert" aria-live="polite">
-        <div class="site-alert__inner">
-            <span class="site-alert__icon" aria-hidden="true">
-                <i class="fas fa-triangle-exclamation"></i>
-            </span>
-            <span class="site-alert__text">{{ site_config.special_alert }}</span>
-        </div>
-    </div>
-</div>
-{% endif %}
-
 <!-- Services Section -->
 <section id="servicios" class="py-5 bg-light">
     <div class="container">
         <div class="section-heading-group text-center">
-            <div class="section-kicker" data-aos="fade-up">Experiencias para todo el día</div>
-            <h2 class="section-heading text-center fw-bold" data-aos="fade-up">Servicios</h2>
+            <h2 class="section-heading fw-bold" data-aos="fade-up">Un lugar. Muchas maneras de disfrutarlo.</h2>
             <p class="section-lead text-center text-muted mx-auto service-section-subtitle" data-aos="fade-up" data-aos-delay="100">
-                Todo lo que necesitás para vivir una jornada completa: más comodidad, más naturaleza y más diversión en familia.
+                Para pasar el día o quedarte a acampar. Elegí tu plan y hacelo a tu ritmo.
             </p>
         </div>
-        <div class="row g-4">
+        <div class="services-grid">
             {% for service in services %}
-            <div class="col-12 col-sm-6 col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:0|stringformat:'d' }}00">
-                <div class="service-card service-card--marketing h-100 p-4 bg-white rounded-3 shadow-sm">
-                    <span class="service-badge">Experiencia destacada</span>
-                    {% if service.icon %}
-                    <div class="text-center mb-3 service-icon-wrap">
-                        <img src="{{ service.icon.url }}" alt="{{ service.title }}" class="service-icon" style="max-width: 80px;">
-                    </div>
-                    {% elif service.icon_fa %}
-                    <div class="text-center mb-3 service-icon-wrap">
-                        <i class="fas {{ service.icon_fa }} fa-3x text-danger"></i>
-                    </div>
-                    {% endif %}
-                    <h3 class="h5 fw-bold mb-3 service-title">{{ service.title }}</h3>
-                    <p class="text-muted service-description">{{ service.description }}</p>
-                    {% if service.features %}
-                    <ul class="list-unstyled service-features">
-                        {% for feature in service.features %}
-                        <li><i class="fas fa-check-circle me-2"></i>{{ feature }}</li>
-                        {% endfor %}
-                    </ul>
-                    {% endif %}
-
-                    <a href="#contacto" class="btn service-cta mt-auto">
-                        <i class="fas fa-paper-plane me-2"></i>Quiero este servicio
-                    </a>
+            <article class="service-card" data-aos="fade-up">
+                <div class="service-icon-wrap">
+                    {% if service.icon %}<img src="{{ service.icon.url }}" alt="" class="service-icon" width="48" height="48" loading="lazy">
+                    {% elif service.icon_fa %}<i class="fas {{ service.icon_fa }}" aria-hidden="true"></i>
+                    {% elif 'deport' in service.title|lower %}<i class="fas fa-volleyball" aria-hidden="true"></i>
+                    {% elif 'adicion' in service.title|lower %}<i class="fas fa-store" aria-hidden="true"></i>
+                    {% else %}<i class="fas fa-campground" aria-hidden="true"></i>{% endif %}
                 </div>
-            </div>
+                <div class="service-copy">
+                    <h3 class="service-title">{{ service.title }}</h3>
+                    <p class="service-description">{{ service.description }}</p>
+                    {% if service.features %}<ul class="service-features">{% for feature in service.features %}<li>{{ feature }}</li>{% endfor %}</ul>{% endif %}
+                    <a href="#contacto" class="service-cta">Consultar <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+                </div>
+            </article>
             {% empty %}
-            <div class="col-12 text-center">
-                <p class="text-muted">No hay servicios disponibles en este momento.</p>
-            </div>
+            <p class="text-muted">Estamos actualizando los servicios. Consultanos para planificar tu visita.</p>
             {% endfor %}
         </div>
     </div>
@@ -243,8 +218,8 @@
 <section id="galeria" class="py-5">
     <div class="container">
         <div class="section-heading-group text-center">
-            <div class="section-kicker" data-aos="fade-up">Postales del predio</div>
-            <h2 class="section-heading text-center fw-bold" data-aos="fade-up">Galería</h2>
+            <h2 class="section-heading fw-bold" data-aos="fade-up">Un vistazo a tu próxima escapada.</h2>
+            <p class="section-lead">Así se vive el camping, entre árboles y buena compañía.</p>
         </div>
         
         {% if gallery_images %}
@@ -252,10 +227,10 @@
             <div class="swiper-wrapper">
                 {% for image in gallery_images %}
                 <div class="swiper-slide">
-                    <div class="gallery-item">
-                        <img src="{{ image.image.url }}" alt="{{ image.alt_text }}" class="gallery-image" loading="lazy" decoding="async">
+                    <div class="gallery-item" role="button" tabindex="0" aria-label="Ampliar fotografía: {{ image.title }}">
+                        <img src="{{ image.image.url }}" alt="{{ image.alt_text|default:image.title }}" class="gallery-image" loading="lazy" decoding="async">
                         <div class="gallery-caption">
-                            <h5 class="gallery-title">{{ image.title }}</h5>
+                            <h3 class="gallery-title">{{ image.title }}</h3>
                             {% if image.description %}
                             <p class="gallery-description">{{ image.description }}</p>
                             {% endif %}
@@ -264,17 +239,17 @@
                 </div>
                 {% endfor %}
             </div>
-            <div class="swiper-button-next"></div>
-            <div class="swiper-button-prev"></div>
+            <div class="swiper-button-next" aria-label="Fotografía siguiente"></div>
+            <div class="swiper-button-prev" aria-label="Fotografía anterior"></div>
             <div class="swiper-pagination"></div>
         </div>
 
         <!-- Lightbox / Zoom -->
-        <div class="gallery-lightbox" id="galleryLightbox" aria-hidden="true">
+        <div class="gallery-lightbox" id="galleryLightbox" role="dialog" aria-modal="true" aria-label="Fotografía ampliada" aria-hidden="true">
             <button type="button" class="gallery-lightbox__close" id="galleryLightboxClose" aria-label="Cerrar">
                 <i class="fas fa-times" aria-hidden="true"></i>
             </button>
-            <div class="gallery-lightbox__stage" id="galleryLightboxStage" role="dialog" aria-modal="true" aria-label="Vista ampliada de la imagen">
+            <div class="gallery-lightbox__stage" id="galleryLightboxStage">
                 <img id="galleryLightboxImg" class="gallery-lightbox__img" alt="">
             </div>
         </div>
@@ -288,10 +263,9 @@
 <section id="novedades" class="py-5 bg-white">
     <div class="container">
         <div class="section-heading-group text-center">
-            <div class="section-kicker" data-aos="fade-up">Lo nuevo en el camping</div>
             <h2 class="section-heading text-center fw-bold mb-4" data-aos="fade-up">Novedades</h2>
         </div>
-        <hr class="mb-5" style="height: 3px; background-color: #df1d2e; opacity: 1; width: 100px; margin: 0 auto;">
+
         
         {% if news_list %}
             {% for news in news_list %}
@@ -323,7 +297,9 @@
                                 <span class="visually-hidden">Siguiente</span>
                             </button>
                         </div>
-                    {% else %}
+                    {% elif imgs %}
+                        <img src="{{ imgs.0.image.url }}" alt="{{ news.title }}" class="img-fluid rounded" loading="lazy" decoding="async">
+                    {% elif news.image %}
                             <img src="{{ news.image.url }}" 
                                 alt="{{ news.title }}" 
                              class="img-fluid rounded shadow"
@@ -353,7 +329,9 @@
                                 <span class="visually-hidden">Siguiente</span>
                             </button>
                         </div>
-                    {% else %}
+                    {% elif imgs %}
+                        <img src="{{ imgs.0.image.url }}" alt="{{ news.title }}" class="img-fluid rounded" loading="lazy" decoding="async">
+                    {% elif news.image %}
                             <img src="{{ news.image.url }}" 
                                 alt="{{ news.title }}" 
                              class="img-fluid rounded shadow"
@@ -369,7 +347,7 @@
             </div>
             {% endfor %}
         {% else %}
-        <p class="text-center text-muted py-5">No hay novedades disponibles en este momento.</p>
+        <p class="text-center text-muted py-5">Las próximas novedades del camping aparecerán acá. Mientras tanto, elegí tu plan al aire libre.</p>
         {% endif %}
     </div>
 </section>
@@ -378,7 +356,6 @@
 <section id="faqs" class="py-5 bg-light">
     <div class="container">
         <div class="section-heading-group text-center">
-            <div class="section-kicker" data-aos="fade-up">Información útil antes de venir</div>
             <h2 class="section-heading text-center fw-bold" data-aos="fade-up">Preguntas frecuentes</h2>
         </div>
         
@@ -388,12 +365,12 @@
             <div class="accordion-item" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:0|stringformat:'d' }}00">
                 <h3 class="accordion-header" id="heading{{ forloop.counter }}">
                     <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" type="button" 
-                            data-bs-toggle="collapse" data-bs-target="#collapse{{ forloop.counter }}">
+                            data-bs-toggle="collapse" data-bs-target="#collapse{{ forloop.counter }}" aria-controls="collapse{{ forloop.counter }}" aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}">
                         {{ faq.question }}
                     </button>
                 </h3>
                 <div id="collapse{{ forloop.counter }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" 
-                     data-bs-parent="#faqAccordion">
+                     data-bs-parent="#faqAccordion" aria-labelledby="heading{{ forloop.counter }}">
                     <div class="accordion-body">
                         {{ faq.answer|linebreaks }}
                     </div>
@@ -401,6 +378,8 @@
             </div>
             {% endfor %}
         </div>
+        {% else %}
+        <p>¿Tenés alguna duda sobre tu visita? <a href="#contacto">Consultanos</a> y te ayudamos a organizarla.</p>
         {% endif %}
     </div>
 </section>
@@ -409,7 +388,6 @@
 <section id="precios" class="py-5">
     <div class="container">
         <div class="section-heading-group text-center">
-            <div class="section-kicker" data-aos="fade-up">Valores claros y simples</div>
             <h2 class="section-heading text-center fw-bold" data-aos="fade-up">Nuestras tarifas</h2>
         </div>
         
@@ -441,6 +419,8 @@
                     {% endfor %}
                 </div>
             </div>
+            {% empty %}
+            <div class="col-12"><div class="rates-empty"><i class="fas fa-calendar-days" aria-hidden="true"></i><div><h3>Planeá tu visita, consultá las tarifas.</h3><p>Pedinos los valores y condiciones para la fecha en la que querés venir.</p></div><a href="#contacto" class="btn btn-primary">Consultar <i class="fas fa-arrow-right ms-2" aria-hidden="true"></i></a></div></div>
             {% endfor %}
         </div>
     </div>
@@ -451,7 +431,6 @@
 <section id="testimonios" class="py-5 bg-light">
     <div class="container">
         <div class="section-heading-group text-center">
-            <div class="section-kicker" data-aos="fade-up">Experiencias reales</div>
             <h2 class="section-heading text-center fw-bold" data-aos="fade-up">Lo que dicen nuestros visitantes</h2>
         </div>
         
@@ -483,16 +462,36 @@
 </section>
 {% endif %}
 
+<!-- Beneficios y registro -->
+<section id="registro" class="py-5">
+    <div class="container">
+        <div class="registration-banner">
+            <div class="registration-copy">
+                <i class="fas fa-ticket" aria-hidden="true"></i>
+                <h2>Más motivos para volver.</h2>
+                <p>Creá tu cuenta y recibí novedades, promociones y beneficios especiales del camping.</p>
+            </div>
+            <div class="landing-cta-card">
+                {% if user.is_authenticated %}
+                <p>Ya sos parte. Las próximas novedades te esperan en tu email.</p>
+                {% else %}
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#registerModal">Registrarme <i class="fas fa-arrow-right ms-2" aria-hidden="true"></i></button>
+                <a href="{% url 'landing:acceso' %}" class="text-link" data-bs-toggle="modal" data-bs-target="#loginModal">Ya tengo cuenta</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
 <!-- Contact Section -->
 <section id="contacto" class="py-5">
     <div class="container">
         <div class="row align-items-center">
             <div class="col-lg-6 mb-4 mb-lg-0" data-aos="fade-right">
                 <div class="contact-copy-card">
-                    <div class="section-kicker">Consultas y reservas grupales</div>
-                    <h2 class="section-heading fw-bold mb-4">Personaliza tu experiencia en grupo</h2>
-                    <p class="lead">Estamos preparando experiencias únicas para grupos familiares, festejos, campamentos grupales y clubes de autos.</p>
-                    <p>Completá el formulario con la información de tu grupo y en breve te enviaremos una cotización personalizada.</p>
+                    <h2 class="section-heading fw-bold mb-4">El próximo encuentro, al aire libre.</h2>
+                    <p class="lead">¿Una salida en familia, un festejo o un encuentro en grupo? Contanos qué tenés en mente.</p>
+                    <p>Dejanos tu consulta y te ayudamos a organizar la visita.</p>
                 </div>
             </div>
             <div class="col-lg-6" data-aos="fade-left">
@@ -502,19 +501,23 @@
                         <input type="hidden" name="form_name" value="contact">
                         <div class="mb-3">
                             <label for="contact_full_name" class="form-label fw-bold small mb-1">Nombre y apellido</label>
-                            <input type="text" id="contact_full_name" name="full_name" class="form-control" placeholder="Nombre completo" autocomplete="name" required>
+                            <input type="text" id="contact_full_name" name="full_name" value="{{ contact_form.full_name.value|default_if_none:'' }}" class="form-control{% if contact_form.full_name.errors %} is-invalid{% endif %}" placeholder="Nombre completo" autocomplete="name" required>
+                            {% for error in contact_form.full_name.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
                         </div>
                         <div class="mb-3">
                             <label for="contact_email" class="form-label fw-bold small mb-1">Email</label>
-                            <input type="email" id="contact_email" name="email" class="form-control" placeholder="tu@email.com" autocomplete="email" required>
+                            <input type="email" id="contact_email" name="email" value="{{ contact_form.email.value|default_if_none:'' }}" class="form-control{% if contact_form.email.errors %} is-invalid{% endif %}" placeholder="tu@email.com" autocomplete="email" required>
+                            {% for error in contact_form.email.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
                         </div>
                         <div class="mb-3">
                             <label for="contact_phone" class="form-label fw-bold small mb-1">Teléfono</label>
-                            <input type="tel" id="contact_phone" name="phone" class="form-control" placeholder="Ej: 11 1234 5678" inputmode="tel" autocomplete="tel" required>
+                            <input type="tel" id="contact_phone" name="phone" value="{{ contact_form.phone.value|default_if_none:'' }}" class="form-control{% if contact_form.phone.errors %} is-invalid{% endif %}" placeholder="Ej: 11 1234 5678" inputmode="tel" autocomplete="tel" required>
+                            {% for error in contact_form.phone.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
                         </div>
                         <div class="mb-3">
                             <label for="contact_message" class="form-label fw-bold small mb-1">Mensaje</label>
-                            <textarea id="contact_message" name="message" class="form-control" rows="5" placeholder="Contanos cuántos son, fecha aproximada y qué tipo de evento." required></textarea>
+                            <textarea id="contact_message" name="message" class="form-control" rows="5" placeholder="Contanos cuántos son, fecha aproximada y qué tipo de evento." required>{{ contact_form.message.value|default_if_none:'' }}</textarea>
+                            {% for error in contact_form.message.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
                             <div class="form-text">Te respondemos a la brevedad.</div>
                         </div>
                         <button type="submit" class="btn btn-primary w-100 py-3" aria-label="Enviar consulta">Enviar</button>
@@ -534,20 +537,16 @@
 
 <script>
 // Initialize AOS
-AOS.init({
-    duration: 800,
-    once: true,
-});
+if (window.AOS) AOS.init({ duration: 650, once: true, offset: 40, disable: window.matchMedia('(prefers-reduced-motion: reduce)').matches });
 
 // Initialize Swiper
-const swiper = new Swiper('.gallerySwiper', {
+const swiper = window.Swiper && document.querySelector('.gallerySwiper') ? new Swiper('.gallerySwiper', {
     slidesPerView: 1,
     spaceBetween: 16,
-    loop: true,
-    autoplay: {
-        delay: 5000,
-        disableOnInteraction: false,
-    },
+    loop: document.querySelectorAll('.gallerySwiper .swiper-slide').length > 2,
+    autoplay: false,
+    keyboard: { enabled: true, onlyInViewport: true },
+    a11y: { prevSlideMessage: "Fotografía anterior", nextSlideMessage: "Fotografía siguiente" },
     pagination: {
         el: '.swiper-pagination',
         clickable: true,
@@ -566,7 +565,7 @@ const swiper = new Swiper('.gallerySwiper', {
             spaceBetween: 28,
         }
     },
-});
+}) : null;
 
 // Gallery lightbox + zoom
 (() => {
@@ -602,19 +601,25 @@ const swiper = new Swiper('.gallerySwiper', {
         applyTransform();
     };
 
+    let previousFocus;
     const open = (src, alt) => {
+        previousFocus = document.activeElement;
         img.src = src;
         img.alt = alt || '';
         resetTransform();
         lightbox.classList.add('is-open');
         lightbox.setAttribute('aria-hidden', 'false');
         document.body.classList.add('gallery-lightbox-open');
+        closeBtn.focus();
+        if (swiper && swiper.keyboard) swiper.keyboard.disable();
     };
 
     const close = () => {
         lightbox.classList.remove('is-open');
         lightbox.setAttribute('aria-hidden', 'true');
         document.body.classList.remove('gallery-lightbox-open');
+        previousFocus?.focus({preventScroll: true});
+        if (swiper && swiper.keyboard) swiper.keyboard.enable();
         // limpiar el src para evitar mostrar flash de la imagen anterior
         window.setTimeout(() => {
             if (!lightbox.classList.contains('is-open')) {
@@ -646,6 +651,9 @@ const swiper = new Swiper('.gallerySwiper', {
         open(imageEl.currentSrc || imageEl.src, imageEl.alt);
     });
 
+    swiperEl.addEventListener('keydown', (e) => {
+        if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('.gallery-item')) { e.preventDefault(); e.target.click(); }
+    });
     closeBtn.addEventListener('click', close);
     lightbox.addEventListener('click', (e) => {
         if (e.target === lightbox) close();
@@ -654,6 +662,7 @@ const swiper = new Swiper('.gallerySwiper', {
     document.addEventListener('keydown', (e) => {
         if (!lightbox.classList.contains('is-open')) return;
         if (e.key === 'Escape') close();
+        if (e.key === 'Tab') { e.preventDefault(); closeBtn.focus(); }
     });
 
     // Wheel zoom (desktop)
@@ -746,7 +755,7 @@ const swiper = new Swiper('.gallerySwiper', {
 })();
 
 // Smooth scroll
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+document.querySelectorAll('a[href^="#"]:not(.skip-link)').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
         const href = this.getAttribute('href');
         if (!href || href === '#') return;
@@ -755,10 +764,16 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 
         e.preventDefault();
         const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        target.scrollIntoView({
+        const scrollToTarget = () => target.scrollIntoView({
             behavior: prefersReducedMotion ? 'auto' : 'smooth',
             block: 'start'
         });
+        const mobileMenu = this.closest('#navbarNav');
+        if (mobileMenu?.classList.contains('show')) {
+            mobileMenu.addEventListener('hidden.bs.collapse', scrollToTarget, { once: true });
+        } else {
+            scrollToTarget();
+        }
     });
 });
 

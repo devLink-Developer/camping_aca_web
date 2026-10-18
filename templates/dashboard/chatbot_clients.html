@@ -393,7 +393,9 @@
     bodyEl.innerHTML = '';
     footerEl.style.setProperty('display', 'none', 'important');
 
-    fetch(`/dashboard/chatbot/clients/${encodeURIComponent(phone)}/messages/json/?page=${page}`)
+    const messagesUrl = '{% url "dashboard:chatbot_client_messages_json" phone="__phone__" %}'
+      .replace('__phone__', encodeURIComponent(phone));
+    fetch(`${messagesUrl}?page=${page}`)
       .then(r => r.json())
       .then(data => {
         loadingEl.style.display = 'none';

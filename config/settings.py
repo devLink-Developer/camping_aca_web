@@ -25,6 +25,19 @@ DEBUG = env('DEBUG')
 
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1'])
 
+# The proxy strips this mount from PATH_INFO before forwarding to Django.
+_mount_path = env('FORCE_SCRIPT_NAME', default='').strip().strip('/')
+FORCE_SCRIPT_NAME = f'/{_mount_path}' if _mount_path else None
+
+# Keep this application's cookies separate from other apps on the same host.
+SESSION_COOKIE_PATH = CSRF_COOKIE_PATH = f'{FORCE_SCRIPT_NAME}/' if FORCE_SCRIPT_NAME else '/'
+SESSION_COOKIE_NAME = env('SESSION_COOKIE_NAME', default='campingaca_sessionid' if FORCE_SCRIPT_NAME else 'sessionid')
+CSRF_COOKIE_NAME = env('CSRF_COOKIE_NAME', default='campingaca_csrftoken' if FORCE_SCRIPT_NAME else 'csrftoken')
+
+# Enable only when the trusted reverse proxy overwrites X-Forwarded-Proto.
+if env.bool('TRUST_PROXY_HEADERS', default=False):
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -87,7 +100,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': env('DB_NAME', default='camping_aca_eb'),
         'USER': env('DB_USER', default='devlink'),
-        'PASSWORD': env('DB_PASSWORD', default='@Inf124578..'),
+        'PASSWORD': env('DB_PASSWORD', default=''),
         'HOST': env('DB_HOST', default='devlink_db'),
         'PORT': env('DB_PORT', default='5455'),
     }
@@ -116,19 +129,19 @@ USE_I18N = True
 USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
-STATIC_URL = '/static/'
+STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Media files
-MEDIA_URL = '/media/'
+MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # Login URLs
-LOGIN_URL = '/acceso/'
-LOGIN_REDIRECT_URL = '/dashboard/statistics/'
-LOGOUT_REDIRECT_URL = '/'
+LOGIN_URL = 'landing:acceso'
+LOGIN_REDIRECT_URL = 'dashboard:statistics'
+LOGOUT_REDIRECT_URL = 'landing:home'
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

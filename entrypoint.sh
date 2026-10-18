@@ -22,7 +22,7 @@ import socket
 
 db_name = os.environ.get('DB_NAME', 'camping_aca_eb')
 db_user = os.environ.get('DB_USER', 'devlink')
-db_password = os.environ.get('DB_PASSWORD', '@Inf124578..')
+db_password = os.environ.get('DB_PASSWORD', '')
 maint_db = os.environ.get('DB_MAINTENANCE_DB', 'postgres')
 
 # Candidate hosts: primary (local) first, then fallback (external)
@@ -116,30 +116,8 @@ python manage.py migrate --noinput --run-syncdb
 echo "Collecting static files..."
 python manage.py collectstatic --noinput --clear
 
-# Create superuser if it doesn't exist
-echo "Creating superuser if needed..."
-python << END
-import os
-import django
-
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
-django.setup()
-
-from django.contrib.auth import get_user_model
-
-User = get_user_model()
-
-if not User.objects.filter(username='admin').exists():
-    User.objects.create_superuser(
-        username='admin',
-        email='admin@campingacalujan.com',
-        password='admin123'  # Change this in production!
-    )
-    print("Superuser 'admin' created with password 'admin123'")
-    print("IMPORTANT: Change this password immediately in production!")
-else:
-    print("Superuser already exists")
-END
+# Administrators must be created explicitly with createsuperuser.
+# Never provision a public account with a predictable default password.
 
 # Create site configuration if it doesn't exist
 echo "Setting up site configuration..."

@@ -1,0 +1,54 @@
+# Independent review deployment. Credentials stay in the server's .env file.
+services:
+  web:
+    build: .
+    image: camping-aca-devlink:${CAMPING_RELEASE:-latest}
+    container_name: camping_aca_devlink
+    restart: unless-stopped
+    user: "1000:1000"
+    env_file: .env
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings
+      DEBUG: "false"
+      FORCE_SCRIPT_NAME: /campingacalujan
+      ALLOWED_HOSTS: devlink.com.ar,localhost,127.0.0.1
+      CSRF_TRUSTED_ORIGINS: https://devlink.com.ar
+      TRUST_PROXY_HEADERS: "true"
+      SESSION_COOKIE_SECURE: "true"
+      CSRF_COOKIE_SECURE: "true"
+      DB_NAME: camping_aca_devlink
+      DB_HOST: devlink_db
+      DB_PORT: "5455"
+    # The database is restored explicitly; startup never seeds or changes users.
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - "python manage.py collectstatic --noinput && exec gunicorn --bind 0.0.0.0:8007 --workers 2 --timeout 120 config.wsgi:application"
+    volumes:
+      - ./staticfiles:/app/staticfiles
+      - ./media:/app/media
+      - ./logs:/app/logs
+    networks: [traefik_proxy]
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: traefik_proxy
+      traefik.http.routers.camping-devlink.rule: "Host(`devlink.com.ar`) && (Path(`/campingacalujan`) || PathPrefix(`/campingacalujan/`))"
+      traefik.http.routers.camping-devlink.priority: "1000"
+      traefik.http.routers.camping-devlink.entrypoints: websecure
+      traefik.http.routers.camping-devlink.tls: "true"
+      traefik.http.routers.camping-devlink.service: camping-devlink
+      traefik.http.routers.camping-devlink.middlewares: camping-devlink-slash,camping-devlink-prefix
+      traefik.http.services.camping-devlink.loadbalancer.server.port: "8007"
+      traefik.http.middlewares.camping-devlink-prefix.stripprefix.prefixes: /campingacalujan
+      traefik.http.middlewares.camping-devlink-slash.redirectregex.regex: "^(https://devlink\\.com\\.ar/campingacalujan)(\\?.*)?$$"
+      traefik.http.middlewares.camping-devlink-slash.redirectregex.replacement: "$${1}/$${2}"
+      traefik.http.middlewares.camping-devlink-slash.redirectregex.permanent: "true"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; r=urllib.request.Request('http://127.0.0.1:8007/', headers={'User-Agent':'healthcheck'}); urllib.request.urlopen(r,timeout=8)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  traefik_proxy:
+    external: true

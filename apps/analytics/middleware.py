@@ -52,7 +52,7 @@ class AnalyticsMiddleware(MiddlewareMixin):
         
         # No trackear páginas del admin, dashboard, vouchers ni estadísticas
         excluded_paths = ['/admin/', '/dashboard/', '/vouchers/', '/estadisticas/']
-        if any(request.path.startswith(path) for path in excluded_paths):
+        if any(request.path_info.startswith(path) for path in excluded_paths):
             return response
         
         # Obtener información del user agent

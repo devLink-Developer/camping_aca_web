@@ -55,7 +55,7 @@
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
+                'X-CSRFToken': '{{ csrf_token|escapejs }}'
             },
             body: JSON.stringify({
                 time_on_page: timeOnPage,
@@ -70,7 +70,7 @@
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
+                'X-CSRFToken': '{{ csrf_token|escapejs }}'
             },
             body: JSON.stringify({
                 section_id: sectionId,
@@ -85,22 +85,6 @@
         const section = document.getElementById(sectionId);
         const heading = section ? section.querySelector('h2, h1') : null;
         return heading ? heading.textContent.trim() : sectionId;
-    }
-    
-    // Get CSRF token
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
     }
     
     // Event listeners

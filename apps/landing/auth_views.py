@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+from urllib.parse import urlsplit
+
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
+from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_http_methods
 
@@ -14,6 +17,18 @@ def _safe_redirect(request: HttpRequest, url: str | None, fallback: str) -> Http
     if url and url_has_allowed_host_and_scheme(url=url, allowed_hosts={request.get_host()}):
         return redirect(url)
     return redirect(fallback)
+
+
+def _is_admin_path(url: str | None) -> bool:
+    if not url:
+        return False
+    try:
+        path = urlsplit(url).path
+    except ValueError:
+        return False
+    return path.startswith(tuple(reverse(name) for name in (
+        'dashboard:home', 'vouchers:list', 'admin:index',
+    )))
 
 
 @require_http_methods(["GET", "POST"])
@@ -81,13 +96,13 @@ def toggle_client_mode(request: HttpRequest) -> HttpResponse:
 
     if request.session["client_mode"]:
         # Guardar la última pantalla admin para poder volver luego.
-        if next_url and (next_url.startswith("/dashboard") or next_url.startswith("/vouchers") or next_url.startswith("/admin")):
+        if _is_admin_path(next_url):
             request.session["last_admin_path"] = next_url
             next_url = None
         return _safe_redirect(request, next_url, "landing:home")
 
     # Al volver a admin, intentamos volver a la última pantalla admin usada.
-    if not next_url or not (next_url.startswith("/dashboard") or next_url.startswith("/vouchers") or next_url.startswith("/admin")):
+    if not _is_admin_path(next_url):
         next_url = request.session.get("last_admin_path")
 
     return _safe_redirect(request, next_url, "dashboard:settings")

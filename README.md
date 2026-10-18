@@ -2,6 +2,30 @@
 
 Sistema web moderno para la gestión del Camping ACA Luján, desarrollado con Django, PostgreSQL y Docker. Incluye landing page responsive, dashboard de estadísticas, sistema de vouchers con QR, y panel de administración completo.
 
+## Vista previa local en Windows
+
+Para trabajar en la landing sin conectar con las bases de producción (Python 3.13):
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r scripts/requirements-preview.txt
+.\.venv\Scripts\python.exe scripts/dev_preview.py
+```
+
+Abrir http://127.0.0.1:8000/. El comando crea `db.preview.sqlite3`, reutiliza servicios, preguntas y fotos locales, y retira los precios históricos y testimonios de la vista previa. Las fotos originales se referencian sin modificarlas. No crea usuarios administrativos. Los horarios y tarifas requieren confirmación antes de publicar.
+
+`config.settings_local` usa SQLite, correo en consola y desactiva el middleware de analítica. La conexión adicional Devlink queda limitada a un puerto local inactivo. Las migraciones específicas de PostgreSQL se sustituyen únicamente en esta configuración por la creación del esquema desde los modelos actuales. Este entorno permite revisar la interfaz; la integración de producción debe comprobarse con PostgreSQL por separado.
+
+```powershell
+# Preparar los datos sin iniciar el servidor
+.\.venv\Scripts\python.exe scripts/dev_preview.py --prepare-only
+# Comprobar configuración y aislamiento local
+.\.venv\Scripts\python.exe manage.py check --settings=config.settings_local
+.\.venv\Scripts\python.exe manage.py test scripts.test_dev_preview --settings=config.settings_local
+```
+
+Los comandos Docker y `entrypoint.sh` descritos a continuación corresponden al despliegue y no son necesarios para esta vista previa.
+
 ## 🚀 Características Principales
 
 ### Landing Page Moderna

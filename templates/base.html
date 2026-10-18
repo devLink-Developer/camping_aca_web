@@ -39,9 +39,12 @@
             <a class="navbar-brand" href="{% url 'landing:home' %}">
                 {% if site_config.logo %}
                 <img src="{{ site_config.logo.url }}" alt="{{ site_config.site_name }}" class="navbar-brand-logo">
+                {% elif request.resolver_match.url_name == 'home' %}
+                <img src="{% static 'images/landing/logo-centro-recreativo.webp' %}" alt="Centro Recreativo Luján ACA" class="navbar-brand-logo landing-brand-logo" width="64" height="64">
+                <span class="landing-brand-name">Camping ACA<small>Luján · Buenos Aires</small></span>
                 {% else %}
                 <span class="navbar-brand-copy navbar-brand-copy--fallback">
-                    <span>CAMPING LUJAN <span class="text-danger">ACA</span></span>
+                    <span>CAMPING LUJÁN <span class="text-danger">ACA</span></span>
                 </span>
                 {% endif %}
             </a>
@@ -106,7 +109,7 @@
                         <a class="nav-link" href="{% if request.path == home_url %}#servicios{% else %}{{ home_url }}#servicios{% endif %}">Servicios</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% if request.path == home_url %}#galeria{% else %}{{ home_url }}#galeria{% endif %}">Galeria</a>
+                        <a class="nav-link" href="{% if request.path == home_url %}#galeria{% else %}{{ home_url }}#galeria{% endif %}">Galería</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{% if request.path == home_url %}#novedades{% else %}{{ home_url }}#novedades{% endif %}">Novedades</a>
@@ -226,8 +229,8 @@
             <div class="row g-4 align-items-start">
                 <div class="col-12 col-lg-5">
                     <div class="site-footer__panel">
-                        <div class="site-footer__eyebrow">Camping y naturaleza en Lujan</div>
-                        <h5 class="site-footer__brand fw-bold mb-3">CAMPING LUJAN <span class="text-danger">ACA</span></h5>
+                        <div class="site-footer__eyebrow">Camping y naturaleza en Luján</div>
+                        <h5 class="site-footer__brand fw-bold mb-3">CAMPING LUJÁN <span class="text-danger">ACA</span></h5>
                         <p class="site-footer__text">{{ site_config.tagline }}</p>
                         {% if site_config.opening_hours %}
                         <div class="site-footer__meta">
@@ -277,6 +280,9 @@
                             </a>
                             {% endif %}
                         </div>
+                        {% if request.resolver_match.url_name == 'home' %}
+                        <a class="footer-aca-link" href="https://www.aca.org.ar/promociones/asociacion/0724/?id=3335383230373C333033313A3734373B32353C3A303A5367676166254964776B682069686C69" target="_blank" rel="noopener noreferrer">Asociate al ACA <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
+                        {% endif %}
                     </div>
                 </div>
             </div>
