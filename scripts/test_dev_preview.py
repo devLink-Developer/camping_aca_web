@@ -2,6 +2,7 @@
 import os
 import sys
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 os.environ['DJANGO_SETTINGS_MODULE'] = 'config.settings_local'
@@ -10,7 +11,8 @@ import django
 django.setup()
 
 from django.conf import settings
-from django.test import Client, TestCase
+from django.test import Client, TestCase, override_settings
+from PIL import Image
 from scripts.dev_preview import seed_preview
 
 
@@ -24,6 +26,12 @@ class PreviewIsolationTests(TestCase):
         from apps.landing.models import Service, Price, GalleryImage, SiteConfiguration
         from apps.analytics.models import PageView, UserSession
 
+        # Make the seed contract independent of untracked photos on a developer's
+        # machine or a server. These fixtures never touch real uploaded media.
+        media_root = Path(self.enterContext(TemporaryDirectory()))
+        self.enterContext(override_settings(MEDIA_ROOT=media_root))
+        (media_root / 'gallery').mkdir()
+        Image.new('RGB', (4, 4), 'white').save(media_root / 'gallery/001_orig.jpg')
         seed_preview()
         first_counts = (Service.objects.count(), GalleryImage.objects.count())
         seed_preview()
