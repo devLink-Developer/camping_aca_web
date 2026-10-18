@@ -71,6 +71,7 @@ class SubpathTests(TestCase):
         configured = deployment_settings('/campingacalujan')
         self.assertEqual(configured['STATIC_URL'], '/campingacalujan/static/')
         self.assertEqual(configured['MEDIA_URL'], '/campingacalujan/media/')
+        self.assertEqual(configured['WHITENOISE_STATIC_PREFIX'], '/static/')
 
     def test_landing_assets_forms_and_media_keep_the_mount(self):
         # A lost prefix sends these requests to another application on the host.
@@ -118,6 +119,26 @@ class SubpathTests(TestCase):
                 self.assertIn('text/css', response['Content-Type'])
                 self.assertTrue(b''.join(response.streaming_content))
                 response.close()
+
+    @override_settings(
+        DEBUG=False,
+        STATIC_ROOT=Path(__file__).resolve().parents[1] / 'static',
+        WHITENOISE_AUTOREFRESH=False,
+        WHITENOISE_USE_FINDERS=False,
+    )
+    def test_static_lookup_is_ready_before_first_wsgi_request_sets_prefix(self):
+        from whitenoise.middleware import WhiteNoiseMiddleware
+        with mounted('/campingacalujan') as configured, override_settings(
+            WHITENOISE_STATIC_PREFIX=deployment_settings('/campingacalujan')['WHITENOISE_STATIC_PREFIX'],
+        ):
+            # Gunicorn initializes middleware before a request sets this value.
+            set_script_prefix('/')
+            middleware = WhiteNoiseMiddleware(lambda request: HttpResponse(status=404))
+            request = RequestFactory().get('/static/css/landing.css', SCRIPT_NAME='/campingacalujan')
+            response = middleware(request)
+            self.addCleanup(response.close)
+            self.assertEqual(response.status_code, 200)
+            self.assertIn('text/css', response['Content-Type'])
 
     def test_contact_post_redirect_and_notification_keep_the_mount(self):
         with mounted('/campingacalujan'):

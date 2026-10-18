@@ -132,6 +132,7 @@ USE_TZ = True
 # Resolve at configuration time: WSGI middleware may cache storage URLs before
 # the first request establishes the thread's script prefix.
 STATIC_URL = f'{FORCE_SCRIPT_NAME or ""}/static/'
+WHITENOISE_STATIC_PREFIX = '/static/'  # PATH_INFO after the proxy strips the mount.
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STORAGES = {
