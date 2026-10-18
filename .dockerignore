@@ -23,3 +23,6 @@ db.sqlite3
 media/
 staticfiles/
 logs/
+backups/
+*.dump
+*.tar
