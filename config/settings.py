@@ -129,7 +129,9 @@ USE_I18N = True
 USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
-STATIC_URL = 'static/'
+# Resolve at configuration time: WSGI middleware may cache storage URLs before
+# the first request establishes the thread's script prefix.
+STATIC_URL = f'{FORCE_SCRIPT_NAME or ""}/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STORAGES = {
@@ -138,7 +140,7 @@ STORAGES = {
 }
 
 # Media files
-MEDIA_URL = 'media/'
+MEDIA_URL = f'{FORCE_SCRIPT_NAME or ""}/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # Login URLs

@@ -67,6 +67,11 @@ class SubpathTests(TestCase):
             with self.subTest(prefix=configured):
                 self.assertEqual(deployment_settings(configured).get('FORCE_SCRIPT_NAME'), expected)
 
+    def test_asset_settings_are_explicit_before_the_first_wsgi_request(self):
+        configured = deployment_settings('/campingacalujan')
+        self.assertEqual(configured['STATIC_URL'], '/campingacalujan/static/')
+        self.assertEqual(configured['MEDIA_URL'], '/campingacalujan/media/')
+
     def test_landing_assets_forms_and_media_keep_the_mount(self):
         # A lost prefix sends these requests to another application on the host.
         SiteConfiguration.objects.filter(pk=1).update(hero_image='config/hero-test.jpg')
